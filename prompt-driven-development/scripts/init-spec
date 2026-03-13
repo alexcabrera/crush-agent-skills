@@ -1,0 +1,149 @@
+#!/bin/bash
+#
+# init-spec - Initialize a specification directory for prompt-driven development
+#
+# Usage:
+#   init-spec "rough idea description"
+#   init-spec "build a rate limiter" [--dir custom/path]
+#
+# Creates:
+#   specs/{task-name}/
+#   ├── rough-idea.md      # Original concept
+#   ├── requirements.md    # Q&A record (empty)
+#   └── research/          # Research notes directory
+
+set -e
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Default values
+ROUGH_IDEA=""
+SPEC_DIR=""
+BASE_DIR="specs"
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --dir|-d)
+            SPEC_DIR="$2"
+            shift 2
+            ;;
+        --help|-h)
+            echo "Usage: init-spec \"rough idea description\" [--dir custom/path]"
+            echo ""
+            echo "Creates a specification directory structure for prompt-driven development."
+            echo ""
+            echo "Arguments:"
+            echo "  rough idea     The initial concept or idea (required)"
+            echo "  --dir, -d      Custom directory path (default: specs/{task-name})"
+            echo "  --help, -h     Show this help message"
+            echo ""
+            echo "Example:"
+            echo "  init-spec \"build a rate limiter for the API\""
+            echo "  init-spec \"user authentication system\" --dir specs/auth-v2"
+            exit 0
+            ;;
+        *)
+            if [ -z "$ROUGH_IDEA" ]; then
+                ROUGH_IDEA="$1"
+            fi
+            shift
+            ;;
+    esac
+done
+
+# Validate required argument
+if [ -z "$ROUGH_IDEA" ]; then
+    echo -e "${RED}Error: Rough idea description is required${NC}"
+    echo "Usage: init-spec \"rough idea description\" [--dir custom/path]"
+    exit 1
+fi
+
+# Convert rough idea to kebab-case task name
+to_kebab_case() {
+    echo "$1" | \
+        tr '[:upper:]' '[:lower:]' | \
+        sed 's/[^a-z0-9]/-/g' | \
+        sed 's/--*/-/g' | \
+        sed 's/^-//' | \
+        sed 's/-$//'
+}
+
+TASK_NAME=$(to_kebab_case "$ROUGH_IDEA")
+
+# Set spec directory
+if [ -z "$SPEC_DIR" ]; then
+    SPEC_DIR="${BASE_DIR}/${TASK_NAME}"
+fi
+
+# Check if directory already exists
+if [ -d "$SPEC_DIR" ] && [ "$(ls -A $SPEC_DIR 2>/dev/null)" ]; then
+    echo -e "${RED}Error: Directory '$SPEC_DIR' already exists and is not empty${NC}"
+    echo "Use --dir to specify a different path"
+    exit 1
+fi
+
+# Create directory structure
+mkdir -p "$SPEC_DIR/research"
+
+# Create rough-idea.md
+cat > "$SPEC_DIR/rough-idea.md" << EOF
+# Rough Idea
+
+$ROUGH_IDEA
+
+---
+*Created: $(date -u +"%Y-%m-%dT%H:%M:%SZ")*
+EOF
+
+# Create empty requirements.md
+cat > "$SPEC_DIR/requirements.md" << EOF
+# Requirements
+
+## Rough Idea
+
+$ROUGH_IDEA
+
+---
+
+## Clarification Q&A
+
+*Questions and answers will be added here during the clarification process.*
+
+---
+
+## Summary
+
+*To be updated as requirements are clarified.*
+
+## Open Questions
+
+*Questions not yet answered.*
+
+## Decisions Made
+
+*Decisions and their rationale.*
+EOF
+
+# Output summary
+echo -e "${GREEN}Created specification directory:${NC} $SPEC_DIR"
+echo ""
+echo -e "${BLUE}Structure:${NC}"
+echo "  $SPEC_DIR/"
+echo "  ├── rough-idea.md      # Original concept"
+echo "  ├── requirements.md    # Q&A record"
+echo "  └── research/          # Research notes"
+echo ""
+echo -e "${BLUE}Task name:${NC} $TASK_NAME"
+echo ""
+echo -e "${BLUE}Next steps:${NC}"
+echo "  1. Review rough-idea.md"
+echo "  2. Begin requirements clarification"
+echo "  3. Conduct research as needed"
+echo "  4. Create design.md"
+echo "  5. Create plan.md"
+echo "  6. Hand off to ticket-planning skill"
