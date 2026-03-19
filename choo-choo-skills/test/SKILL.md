@@ -220,7 +220,7 @@ After implementing a ticket, the verify skill uses this test skill to:
 During execution, this skill enables:
 1. Running integration tests without blocking Crush
 2. Testing CLI tools end-to-end
-3. Starting dev servers for manual verification
+3. Starting dev servers for interactive testing
 
 ## Isolation Architecture
 

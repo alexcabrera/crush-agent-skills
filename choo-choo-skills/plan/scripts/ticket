@@ -158,10 +158,10 @@ cmd_create() {
     ensure_dir
 
     local title="" description="" design="" acceptance=""
-    local priority=2 issue_type="task" assignee="" external_ref="" parent="" tags=""
+    local priority=2 issue_type="task" owner="" external_ref="" parent="" tags=""
 
-    # Default assignee to git user.name if available
-    assignee=$(git config user.name 2>/dev/null || true)
+    # Default owner to agent
+    owner="agent"
 
     # Parse args
     while [[ $# -gt 0 ]]; do
@@ -171,7 +171,7 @@ cmd_create() {
             --acceptance) acceptance="$2"; shift 2 ;;
             -p|--priority) priority="$2"; shift 2 ;;
             -t|--type) issue_type="$2"; shift 2 ;;
-            -a|--assignee) assignee="$2"; shift 2 ;;
+            -o|--owner) owner="$2"; shift 2 ;;
             --external-ref) external_ref="$2"; shift 2 ;;
             --parent) parent="$2"; shift 2 ;;
             --tags) tags="$2"; shift 2 ;;
@@ -203,7 +203,7 @@ cmd_create() {
         echo "created: $now"
         echo "type: $issue_type"
         echo "priority: $priority"
-        [[ -n "$assignee" ]] && echo "assignee: $assignee"
+        [[ -n "$owner" ]] && echo "owner: $owner"
         [[ -n "$external_ref" ]] && echo "external-ref: $external_ref"
         [[ -n "$parent" ]] && echo "parent: $parent"
         if [[ -n "$tags" ]]; then
@@ -651,29 +651,29 @@ cmd_dep() {
 }
 
 cmd_ready() {
-    local assignee_filter="" tag_filter=""
+    local owner_filter="" tag_filter=""
     while [[ $# -gt 0 ]]; do
         case "$1" in
-            -a) assignee_filter="$2"; shift 2 ;;
-            --assignee=*) assignee_filter="${1#--assignee=}"; shift ;;
+            -o) owner_filter="$2"; shift 2 ;;
+            --owner=*) owner_filter="${1#--owner=}"; shift ;;
             -T) tag_filter="$2"; shift 2 ;;
             --tag=*) tag_filter="${1#--tag=}"; shift ;;
             *) shift ;;
         esac
     done
 
-    awk -v assignee_filter="$assignee_filter" -v tag_filter="$tag_filter" '
+    awk -v owner_filter="$owner_filter" -v tag_filter="$tag_filter" '
     BEGIN { FS=": "; in_front=0 }
     FNR==1 {
         if (prev_file) store()
-        id=""; status=""; title=""; deps=""; priority=""; assignee=""; tags=""; in_front=0
+        id=""; status=""; title=""; deps=""; priority=""; owner=""; tags=""; in_front=0
         prev_file=FILENAME
     }
     /^---$/ { in_front = !in_front; next }
     in_front && /^id:/ { id = $2 }
     in_front && /^status:/ { status = $2 }
     in_front && /^priority:/ { priority = $2 }
-    in_front && /^assignee:/ { assignee = $2 }
+    in_front && /^owner:/ { owner = $2 }
     in_front && /^tags:/ { tags = $2; gsub(/[\[\] ]/, "", tags) }
     in_front && /^deps:/ {
         deps = $2
@@ -685,13 +685,24 @@ cmd_ready() {
         for (i = 1; i <= n; i++) if (arr[i] == tag) return 1
         return 0
     }
+    function owner_matches(ticket_owner, filter,    ticket_type, filter_type) {
+        if (filter == "") return 1
+        # Parse owner types: "agent", "agent:crush", "human"
+        split(ticket_owner, to_parts, ":")
+        split(filter, f_parts, ":")
+        ticket_type = to_parts[1]
+        filter_type = f_parts[1]
+        # Type match (agent matches agent:crush, human matches human:alex)
+        if (filter_type == ticket_type) return 1
+        return 0
+    }
     function store() {
         if (id != "") {
             statuses[id] = status
             titles[id] = title
             deps_raw[id] = deps
             priorities[id] = (priority != "") ? priority : 2
-            assignees[id] = assignee
+            owners[id] = owner
             all_tags[id] = tags
         }
     }
@@ -701,7 +712,7 @@ cmd_ready() {
         for (id in statuses) {
             status = statuses[id]
             if (status != "open" && status != "in_progress") continue
-            if (assignee_filter != "" && assignees[id] != assignee_filter) continue
+            if (!owner_matches(owners[id], owner_filter)) continue
             if (tag_filter != "" && !has_tag(all_tags[id], tag_filter)) continue
 
             deps = deps_raw[id]
@@ -741,12 +752,12 @@ cmd_ready() {
 }
 
 cmd_closed() {
-    local limit=20 assignee_filter="" tag_filter=""
+    local limit=20 owner_filter="" tag_filter=""
     while [[ $# -gt 0 ]]; do
         case "$1" in
             --limit=*) limit="${1#--limit=}"; shift ;;
-            -a) assignee_filter="$2"; shift 2 ;;
-            --assignee=*) assignee_filter="${1#--assignee=}"; shift ;;
+            -o) owner_filter="$2"; shift 2 ;;
+            --owner=*) owner_filter="${1#--owner=}"; shift ;;
             -T) tag_filter="$2"; shift 2 ;;
             --tag=*) tag_filter="${1#--tag=}"; shift ;;
             *) shift ;;
@@ -757,17 +768,17 @@ cmd_closed() {
     local files
     files=$(ls -t "$TICKETS_DIR"/*.md 2>/dev/null | head -n 100)
     [[ -z "$files" ]] && return 0
-    echo "$files" | xargs awk -v assignee_filter="$assignee_filter" -v tag_filter="$tag_filter" '
+    echo "$files" | xargs awk -v owner_filter="$owner_filter" -v tag_filter="$tag_filter" '
     BEGIN { FS=": "; in_front=0 }
     FNR==1 {
         if (prev_file) emit()
-        id=""; status=""; title=""; assignee=""; tags=""; in_front=0
+        id=""; status=""; title=""; owner=""; tags=""; in_front=0
         prev_file=FILENAME
     }
     /^---$/ { in_front = !in_front; next }
     in_front && /^id:/ { id = $2 }
     in_front && /^status:/ { status = $2 }
-    in_front && /^assignee:/ { assignee = $2 }
+    in_front && /^owner:/ { owner = $2 }
     in_front && /^tags:/ { tags = $2; gsub(/[\[\] ]/, "", tags) }
     !in_front && /^# / && title == "" { title = substr($0, 3) }
     function has_tag(tags_str, tag,    i, n, arr) {
@@ -775,8 +786,17 @@ cmd_closed() {
         for (i = 1; i <= n; i++) if (arr[i] == tag) return 1
         return 0
     }
+    function owner_matches(ticket_owner, filter,    ticket_type, filter_type) {
+        if (filter == "") return 1
+        split(ticket_owner, to_parts, ":")
+        split(filter, f_parts, ":")
+        ticket_type = to_parts[1]
+        filter_type = f_parts[1]
+        if (filter_type == ticket_type) return 1
+        return 0
+    }
     function emit() {
-        if (id != "" && (status == "closed" || status == "done") && (assignee_filter == "" || assignee == assignee_filter) && (tag_filter == "" || has_tag(tags, tag_filter))) {
+        if (id != "" && (status == "closed" || status == "done") && owner_matches(owner, owner_filter) && (tag_filter == "" || has_tag(tags, tag_filter))) {
             output[++count] = sprintf("%-8s [%s] - %s", id, status, title)
         }
     }
@@ -788,29 +808,29 @@ cmd_closed() {
 }
 
 cmd_blocked() {
-    local assignee_filter="" tag_filter=""
+    local owner_filter="" tag_filter=""
     while [[ $# -gt 0 ]]; do
         case "$1" in
-            -a) assignee_filter="$2"; shift 2 ;;
-            --assignee=*) assignee_filter="${1#--assignee=}"; shift ;;
+            -o) owner_filter="$2"; shift 2 ;;
+            --owner=*) owner_filter="${1#--owner=}"; shift ;;
             -T) tag_filter="$2"; shift 2 ;;
             --tag=*) tag_filter="${1#--tag=}"; shift ;;
             *) shift ;;
         esac
     done
 
-    awk -v assignee_filter="$assignee_filter" -v tag_filter="$tag_filter" '
+    awk -v owner_filter="$owner_filter" -v tag_filter="$tag_filter" '
     BEGIN { FS=": "; in_front=0 }
     FNR==1 {
         if (prev_file) store()
-        id=""; status=""; title=""; deps=""; priority=""; assignee=""; tags=""; in_front=0
+        id=""; status=""; title=""; deps=""; priority=""; owner=""; tags=""; in_front=0
         prev_file=FILENAME
     }
     /^---$/ { in_front = !in_front; next }
     in_front && /^id:/ { id = $2 }
     in_front && /^status:/ { status = $2 }
     in_front && /^priority:/ { priority = $2 }
-    in_front && /^assignee:/ { assignee = $2 }
+    in_front && /^owner:/ { owner = $2 }
     in_front && /^tags:/ { tags = $2; gsub(/[\[\] ]/, "", tags) }
     in_front && /^deps:/ {
         deps = $2
@@ -822,13 +842,22 @@ cmd_blocked() {
         for (i = 1; i <= n; i++) if (arr[i] == tag) return 1
         return 0
     }
+    function owner_matches(ticket_owner, filter,    ticket_type, filter_type) {
+        if (filter == "") return 1
+        split(ticket_owner, to_parts, ":")
+        split(filter, f_parts, ":")
+        ticket_type = to_parts[1]
+        filter_type = f_parts[1]
+        if (filter_type == ticket_type) return 1
+        return 0
+    }
     function store() {
         if (id != "") {
             statuses[id] = status
             titles[id] = title
             deps_raw[id] = deps
             priorities[id] = (priority != "") ? priority : 2
-            assignees[id] = assignee
+            owners[id] = owner
             all_tags[id] = tags
         }
     }
@@ -838,7 +867,7 @@ cmd_blocked() {
         for (id in statuses) {
             status = statuses[id]
             if (status != "open" && status != "in_progress") continue
-            if (assignee_filter != "" && assignees[id] != assignee_filter) continue
+            if (!owner_matches(owners[id], owner_filter)) continue
             if (tag_filter != "" && !has_tag(all_tags[id], tag_filter)) continue
 
             deps = deps_raw[id]
@@ -1305,7 +1334,7 @@ Commands:
     --acceptance           Acceptance criteria
     -t, --type             Type (bug|feature|task|epic|chore) [default: task]
     -p, --priority         Priority 0-4, 0=highest [default: 2]
-    -a, --assignee         Assignee
+    -o, --owner            Owner (agent|agent:name|human) [default: agent]
     --external-ref         External reference (e.g., gh-123, JIRA-456)
     --parent               Parent ticket ID
     --tags                 Comma-separated tags (e.g., --tags ui,backend,urgent)
@@ -1319,9 +1348,9 @@ Commands:
   undep <id> <dep-id>      Remove dependency
   link <id> <id> [id...]   Link tickets together (symmetric)
   unlink <id> <target-id>  Remove link between tickets
-  ready [-a X] [-T X]      List open/in-progress tickets with deps resolved
-  blocked [-a X] [-T X]    List open/in-progress tickets with unresolved deps
-  closed [--limit=N] [-a X] [-T X] List recently closed tickets (default 20, by mtime)
+  ready [-o X] [-T X]      List open/in-progress tickets with deps resolved
+  blocked [-o X] [-T X]    List open/in-progress tickets with unresolved deps
+  closed [--limit=N] [-o X] [-T X] List recently closed tickets (default 20, by mtime)
   show <id>                Display ticket
   add-note <id> [text]     Append timestamped note (or pipe via stdin)
   super <cmd> [args]       Bypass plugins, run built-in command directly

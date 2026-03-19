@@ -1,6 +1,6 @@
 # STATE.md Structure
 
-The STATE.md file is the control plane for choo-choo workflow. It persists session state across context resets and enables fresh-context-per-session patterns.
+The STATE.md file is the control plane for choo-choo workflow. It persists workflow state across context resets and enables context-recovery patterns.
 
 ## Location
 

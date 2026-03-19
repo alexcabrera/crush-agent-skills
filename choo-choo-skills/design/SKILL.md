@@ -87,7 +87,7 @@ Use the init-spec script to create the specification directory:
 # Creates: specs/rate-limiter/ with initial files
 ```
 
-Or create manually:
+Or create directly:
 
 ```bash
 # Derive task-name as kebab-case from the idea
@@ -323,9 +323,15 @@ These rules apply across ALL steps:
 
 **Research limitations:** Document what's missing, suggest alternatives with available information, ask user for additional context. Don't block progress.
 
-**Design complexity:** Break into smaller components, focus on core functionality first, suggest phased implementation, return to requirements to re-prioritize.
+**Design scope too large:** Break into smaller components, focus on core functionality first, suggest phased implementation, return to requirements to re-prioritize.
 
 **User wants to skip ahead:** Remind them that unclear requirements lead to rework. Offer to do a "fast pass" that covers the critical questions only.
+
+---
+
+## Related Skills
+
+- **[ui-design](../ui-design/)** - When design involves CLI/TUI interfaces, invoke ui-design skill for specialized interaction patterns, error handling, and accessibility guidance.
 
 ---
 

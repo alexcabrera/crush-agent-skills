@@ -100,7 +100,7 @@ git log --oneline -20
 Document:
 - Who requested this work?
 - What is the success criteria from their perspective?
-- What are the constraints (time, resources, technical)?
+- What are the constraints (resources, technical, scope)?
 
 ### 1.3 Boundary Definition
 
@@ -172,10 +172,10 @@ Epic: User Authentication
 ### 2.2 Task Granularity Rules
 
 A task is the right size when:
-- Can be completed in 1-8 hours
 - Has clear inputs and outputs
 - Can be tested independently
 - A single agent can own it end-to-end
+- Cannot be meaningfully subdivided further
 
 If a task is larger, split it. If smaller, consider merging with related work.
 
@@ -381,13 +381,13 @@ Before finalizing the plan, pass through these validation gates.
 ### Gate 5: Reality Check
 
 **Checklist:**
-- [ ] Time estimates are realistic (multiply by 2x for safety)
-- [ ] Team has necessary skills and context
+- [ ] Scope estimates are reasonable
+- [ ] Required capabilities are available
 - [ ] Infrastructure/tooling is available
 - [ ] No blockers from external teams/deps
 
 **Self-Critique Questions:**
-- Am I being optimistic about complexity?
+- Am I underestimating scope?
 - What have I never done before in this plan?
 - What external factors could derail this?
 
@@ -520,7 +520,7 @@ Before finalizing any plan:
 [ ] Gate 2 - Integrity: Dependencies validated
 [ ] Gate 3 - Clarity: Tasks are self-sufficient
 [ ] Gate 4 - Risk: High-risk items flagged
-[ ] Gate 5 - Reality: Estimates are realistic
+[ ] Gate 5 - Reality: Scope is well-defined
 [ ] Gate 6 - Documentation: Specs are testable
 [ ] Rollups: Integration tests and checklists created
 [ ] Review: Plan documented and validated

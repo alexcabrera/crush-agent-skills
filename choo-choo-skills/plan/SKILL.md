@@ -1,6 +1,6 @@
 ---
 name: plan
-description: Long-horizon task planning using markdown tickets with dependency tracking. Use for breaking down complex multi-session work into structured tickets (epics, stories, tasks). Invoke when planning features spanning multiple coding sessions, creating project roadmaps, or when work needs to survive context limits. Use agent's builtin todo for immediate tasks; use this skill for work that persists across sessions.
+description: Long-horizon task planning using markdown tickets with dependency tracking. Use for breaking down complex work into structured tickets (epics, stories, tasks). Invoke when planning features spanning multiple context windows, creating project roadmaps, or when work needs to survive context limits. Use agent's builtin todo for immediate tasks; use this skill for work that persists across context resets.
 license: MIT
 compatibility: Requires bash, git. Optional: rg (ripgrep) for faster searches.
 metadata:
@@ -10,7 +10,7 @@ metadata:
 
 # Plan Skill
 
-This skill provides structured long-horizon task management using the `tk` ticket system. Tickets are markdown files that persist in the repository, surviving across coding sessions and context windows.
+This skill provides structured long-horizon task management using the `tk` ticket system. Tickets are markdown files that persist in the repository, surviving across context windows.
 
 Part of the [choo-choo-skills](../) collection.
 
@@ -18,8 +18,8 @@ Part of the [choo-choo-skills](../) collection.
 
 | Scenario | Use |
 |----------|-----|
-| Immediate tasks (current session) | Agent's builtin `todo` tool |
-| Multi-session work | This skill (`tk` tickets) |
+| Immediate tasks (current context) | Agent's builtin `todo` tool |
+| Multi-context work | This skill (`tk` tickets) |
 | Breaking down a large feature | This skill |
 | Creating project roadmaps | This skill |
 | Work that needs to survive context limits | This skill |
@@ -29,7 +29,7 @@ Part of the [choo-choo-skills](../) collection.
 
 Activate this skill when:
 - User asks to "plan" or "break down" a feature or project
-- Work will clearly span multiple sessions
+- Work will clearly span multiple context windows
 - User mentions "roadmap", "epic", "milestone", or similar
 - User wants to track dependencies between tasks
 - User asks about "tickets" or "issues" in context of planning
@@ -56,6 +56,22 @@ alias tk='./scripts/ticket'
 | `ready` | List unblocked tickets |
 | `blocked` | List blocked tickets |
 | `dep tree <id>` | Show dependency tree |
+
+### Ticket Ownership
+
+Each ticket has an `owner` field indicating who is responsible:
+
+```yaml
+owner: agent           # Default - any AI agent can pick this up
+owner: agent:crush     # Specific agent (e.g., Crush)
+owner: human           # Current human operator
+```
+
+Filter tickets by owner:
+```bash
+./scripts/ticket ready -o agent      # Agent-owned tickets
+./scripts/ticket ready -o human      # Human-owned tickets
+```
 
 ---
 
@@ -166,12 +182,12 @@ Before creating any tickets:
 ### 2. Decomposition Phase
 
 Break work into hierarchical tickets:
-- **Epic**: Large feature or initiative (1-4 weeks)
-- **Story**: User-facing functionality (1-3 days)
-- **Task**: Technical implementation unit (hours to 1 day)
-- **Sub-task**: Granular implementation detail
+- **Epic**: Large feature or initiative (major scope)
+- **Story**: User-facing functionality (medium scope)
+- **Task**: Technical implementation unit (small scope)
+- **Sub-task**: Granular implementation detail (atomic scope)
 
-**Atomic Ticket Principle**: Each task ticket should be small enough to complete in a single focused session. A task = one commit. If a ticket needs multiple commits, split it.
+**Atomic Ticket Principle**: Each task ticket should be completable in a single execution cycle. A task = one commit. If a ticket needs multiple commits, split it.
 
 See [Ticket Templates](references/ticket-templates.md) for required sections per type.
 

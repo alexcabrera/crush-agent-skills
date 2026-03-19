@@ -47,8 +47,10 @@ The execution cycle is a strict loop that must be followed without deviation:
 # List unblocked tickets ready to work
 ./scripts/ticket ready
 
-# Filter by assignee if applicable
-./scripts/ticket ready -a yourname
+# Filter by owner if applicable
+./scripts/ticket ready -o agent
+# Or filter for human-owned tickets
+./scripts/ticket ready -o human
 ```
 
 **Prioritization order:**
@@ -78,7 +80,6 @@ Use the agent's builtin `todo` tool to decompose the ticket into atomic units of
 ```
 
 **Atomic unit criteria:**
-- Can be completed in 15-60 minutes
 - Has a clear, testable outcome
 - Cannot be meaningfully subdivided further
 - Maps to one or more test cases

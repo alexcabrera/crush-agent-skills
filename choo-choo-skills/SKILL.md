@@ -3,7 +3,7 @@ name: choo-choo
 description: |
   [META SKILL - Not auto-discovered by Crush. Reference manually.]
   
-  A complete development workflow from idea to implementation. Orchestrates design → plan → validate → execute → verify → close-gaps. Use when starting a new feature or project, or when you want structured development with persistence across sessions. Individual skills can also be used independently.
+  A complete development workflow from idea to implementation. Orchestrates design → plan → validate → execute → verify → close-gaps. Use when starting a new feature or project, or when you want structured development with persistence across context resets. Individual skills can also be used independently.
 license: MIT
 compatibility: Requires bash, git. Optional: rg (ripgrep) for faster searches.
 metadata:
@@ -15,7 +15,7 @@ metadata:
 
 > "I choo-choo-choose you" - Ralph Wiggum
 
-A complete development workflow that takes you from rough idea to verified implementation. Skills persist state via `STATE.md` and tickets, enabling work to survive context resets and continue across sessions.
+A complete development workflow that takes you from rough idea to verified implementation. Skills persist state via `STATE.md` and tickets, enabling work to survive context resets.
 
 ## The Workflow
 
@@ -51,6 +51,7 @@ A complete development workflow that takes you from rough idea to verified imple
 | Skill | Phase | When to Use | Output |
 |-------|-------|-------------|--------|
 | [design](design/) | Design | Rough idea, unclear requirements | requirements.md, design.md |
+| [ui-design](ui-design/) | Design | CLI/TUI interface design | UI specifications |
 | [plan](plan/) | Planning | Have design, need to break into work items | Ticket tree in .tickets/ |
 | [validate](validate/) | Validation | Have tickets, ready to execute | Execution order, validation report |
 | [execute](execute/) | Execution | Implementing a specific ticket | Code, tests |
@@ -106,7 +107,7 @@ decisions:
 
 This enables:
 - Crash recovery: Resume from last known state
-- Fresh context: Each session reads STATE.md to know where to continue
+- Context persistence: Each agent context reads STATE.md to know where to continue
 - Knowledge capture: Learnings persist for future reference
 
 ## Individual vs. Orchestrated Use
@@ -130,7 +131,7 @@ Both modes use the same skills - choo-choo TUI adds visualization and coordinati
 ```
 project/
 ├── .tickets/
-│   ├── STATE.md           # Session state
+│   ├── STATE.md           # Workflow state
 │   ├── E-001-epic.md      # Epic ticket
 │   ├── S-001-story.md     # Story tickets
 │   └── T-001-task.md      # Task tickets

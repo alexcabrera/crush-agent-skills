@@ -4,12 +4,12 @@ Each ticket type has required sections that must be present for the ticket to be
 
 ## Ticket Types
 
-| Type | Scope | Duration | Purpose |
-|------|-------|----------|---------|
-| `epic` | Project-level | 1-4 weeks | Major feature or initiative |
-| `story` | User-facing | 1-3 days | Deliverable user value |
-| `task` | Technical | Hours to 1 day | Implementation unit |
-| `sub-task` | Granular | Hours | Specific implementation detail |
+| Type | Scope | Scale | Purpose |
+|------|-------|-------|---------|
+| `epic` | Project-level | Large | Major feature or initiative |
+| `story` | User-facing | Medium | Deliverable user value |
+| `task` | Technical | Small | Implementation unit |
+| `sub-task` | Granular | Atomic | Specific implementation detail |
 | `bug` | Fix | Varies | Defect resolution |
 | `chore` | Maintenance | Varies | Non-feature work |
 
@@ -17,6 +17,35 @@ Each ticket type has required sections that must be present for the ticket to be
 - Clear git history with one commit per unit of work
 - Easy bisecting to find when issues were introduced
 - Each commit is independently reviewable and revertable
+
+## YAML Frontmatter Fields
+
+Each ticket file starts with YAML frontmatter:
+
+```yaml
+---
+id: abc-1234
+status: open | in_progress | closed
+type: task | story | epic | bug | chore
+priority: 0-4          # 0 = highest priority
+owner: agent | agent:name | human
+deps: [dep-id, ...]    # Tickets this depends on
+links: [link-id, ...]  # Related tickets (non-blocking)
+parent: parent-id      # Parent ticket (hierarchy)
+tags: [tag, ...]       # Arbitrary tags
+created: ISO-8601
+---
+```
+
+### Owner Field
+
+The `owner` field indicates responsibility:
+
+| Value | Meaning |
+|-------|---------|
+| `agent` | Any AI agent can pick this up (default) |
+| `agent:crush` | Specific agent (e.g., Crush) |
+| `human` | Current human operator |
 
 ---
 
@@ -53,7 +82,7 @@ Epics group related stories and provide high-level tracking.
 [External dependencies, other epics, infrastructure needs]
 
 ## Timeline
-[Target dates or relative ordering if applicable]
+[Relative ordering if applicable]
 ```
 
 ### Example Creation

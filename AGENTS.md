@@ -10,12 +10,13 @@ A collection of skills for structured development workflows. Located in `choo-ch
 |-------|---------|
 | `choo-choo` (meta) | Orchestrates the full workflow |
 | `design` | Transform ideas into requirements + architecture |
+| `ui-design` | Design CLI/TUI interfaces and interaction patterns |
 | `plan` | Decompose design into ticket tree |
 | `validate` | Verify plan is executable |
 | `execute` | Implement a single ticket |
 | `verify` | Confirm implementation matches criteria |
 | `close-gaps` | Fix discrepancies found by verify |
-| `tmux-test` | Test CLI/TUI apps in isolated tmux sessions |
+| `test` | Test CLI/TUI apps in isolated sessions |
 
 These skills can be used:
 - Directly in Crush (`crush run "use the design skill..."`)
