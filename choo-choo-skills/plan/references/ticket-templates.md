@@ -13,6 +13,11 @@ Each ticket type has required sections that must be present for the ticket to be
 | `bug` | Fix | Varies | Defect resolution |
 | `chore` | Maintenance | Varies | Non-feature work |
 
+**Atomic Task Principle**: Each task ticket maps to exactly one commit. If implementation requires multiple logical commits, the task should be split into multiple tickets. This ensures:
+- Clear git history with one commit per unit of work
+- Easy bisecting to find when issues were introduced
+- Each commit is independently reviewable and revertable
+
 ---
 
 ## Epic Template

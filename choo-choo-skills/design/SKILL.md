@@ -1,27 +1,29 @@
 ---
-name: prompt-driven-development
-description: Transforms rough ideas into detailed design documents through iterative requirements clarification, research, and architecture design. Use when starting with a vague concept, exploring a new feature, or when requirements need clarification. Outputs specs that feed into ticket-planning skill for implementation.
+name: design
+description: Transforms rough ideas into detailed design documents through iterative requirements clarification, research, and architecture design. Use when starting with a vague concept, exploring a new feature, or when requirements need clarification. Outputs specs that feed into plan skill for decomposition.
 license: MIT
 compatibility: Requires bash, git.
 metadata:
   version: "1.0.0"
-  author: agent-skills
+  author: choo-choo-skills
 ---
 
-# Prompt-Driven Development
+# Design Skill
 
-Transform a rough idea into a detailed design with an implementation plan. This skill handles the exploration phase — clarifying requirements, researching technologies, and designing architecture — before handing off to the ticket-planning skill for decomposition and execution.
+Transform a rough idea into a detailed design with an implementation plan. This skill handles the exploration phase — clarifying requirements, researching technologies, and designing architecture — before handing off to the plan skill for decomposition and execution.
+
+Part of the [choo-choo-skills](../) collection.
 
 ## When to Use This Skill
 
 | Scenario | Use |
 |----------|-----|
-| Starting with a vague idea or concept | This skill (PDD) |
+| Starting with a vague idea or concept | This skill (design) |
 | Requirements need clarification | This skill |
 | Need to research technologies/approaches | This skill |
 | Architecture design needed | This skill |
-| Have clear requirements, ready to implement | ticket-planning skill |
-| Breaking down work into trackable units | ticket-planning skill |
+| Have clear requirements, ready to implement | plan skill |
+| Breaking down work into trackable units | plan skill |
 
 ### Invocation Triggers
 
@@ -49,7 +51,7 @@ specs/{task-name}/
 └── plan.md            # High-level implementation steps
 ```
 
-These artifacts feed directly into the ticket-planning skill.
+These artifacts feed directly into the plan skill.
 
 ---
 
@@ -69,7 +71,7 @@ These artifacts feed directly into the ticket-planning skill.
 │         ↓                                                        │
 │  5. PLAN high-level implementation                              │
 │         ↓                                                        │
-│  6. HANDOFF to ticket-planning skill                            │
+│  6. HANDOFF to plan skill                            │
 │                                                                  │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -271,30 +273,30 @@ Create `plan.md` with incremental implementation steps.
 
 ---
 
-## Step 6: Handoff to Ticket-Planning
+## Step 6: Handoff to Plan Skill
 
 When design.md and plan.md are complete and approved by the user:
 
 **Offer the handoff:**
 
-> "The design is complete. Would you like me to create a ticket plan from this design for implementation?"
+> "The design is complete. Would you like me to create tickets from this design for implementation?"
 
 **If yes:**
-1. Reference the ticket-planning skill
+1. Reference the plan skill
 2. The design.md becomes the source of truth
-3. Ticket-planning will decompose the plan.md into hierarchical tickets
+3. Plan skill will decompose the plan.md into hierarchical tickets
 4. Documentation tickets will reference design.md rather than duplicating it
 
 **Transition summary:**
 
 ```
-PDD Output                    →    Ticket-Planning Input
+Design Output                    →    Plan Input
 ─────────────────────────────────────────────────────────
 specs/{task-name}/design.md   →    Source of truth for requirements
 specs/{task-name}/plan.md     →    Decomposed into tickets
-                              →    tickets/epic-{name}.md
-                              →    tickets/story-{name}.md
-                              →    tickets/task-{name}.md
+                              →    .tickets/epic-{name}.md
+                              →    .tickets/story-{name}.md
+                              →    .tickets/task-{name}.md
 ```
 
 ---

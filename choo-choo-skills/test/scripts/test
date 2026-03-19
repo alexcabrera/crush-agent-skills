@@ -1,0 +1,328 @@
+#!/usr/bin/env bash
+# test - Run automated tests for CLI/TUI applications using tmux isolation
+set -euo pipefail
+
+# Configuration (overridable via environment)
+SOCKET="${TEST_SOCKET:-.tmp/agent.sock}"
+SESSION_PREFIX="${TEST_SESSION_PREFIX:-test-}"
+DEFAULT_WIDTH="${TEST_WIDTH:-120}"
+DEFAULT_HEIGHT="${TEST_HEIGHT:-40}"
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+show_help() {
+    cat << 'EOF'
+test - Run automated tests for CLI/TUI applications
+
+Usage: test <command> [args...]
+
+Session Management:
+  start <name> <command...>    Start new session with command
+  stop <name>                  Stop session gracefully
+  kill <name>                  Force kill session
+  list                         List active test sessions
+  exists <name>                Check if session exists (exit 0/1)
+
+Interaction:
+  send <name> <keys...>        Send keystrokes (special keys interpreted)
+  send-literal <name> <text>   Send literal text (no interpretation)
+  send-file <name> <file>      Send multi-line text from file
+  capture <name>               Capture current screen
+  capture-full <name>          Capture with scrollback history
+
+Assertions:
+  wait <name> <pattern> [timeout]  Wait for pattern (default 30s, returns 124 on timeout)
+  contains <name> <text>           Assert screen contains text
+  match <name> <regex>             Assert screen matches regex
+
+Examples:
+  test start my-app "./my-app"
+  test wait my-app "Welcome" 5
+  test send my-app q
+  test capture my-app
+  test stop my-app
+
+Special Keys: Enter, Escape, Tab, BSpace, C-c, C-d, C-z, Up, Down, Left, Right, PageUp, PageDown, Home, End
+
+Environment Variables:
+  TEST_SOCKET        Socket path (default: .tmp/agent.sock)
+  TEST_SESSION_PREFIX Session prefix (default: test-)
+  TEST_WIDTH         Window width (default: 120)
+  TEST_HEIGHT        Window height (default: 40)
+EOF
+}
+
+# Ensure tmux is available
+check_tmux() {
+    if ! command -v tmux &>/dev/null; then
+        echo "Error: tmux not found. Install tmux first." >&2
+        exit 1
+    fi
+}
+
+# Run tmux command with isolated socket
+tmux_cmd() {
+    tmux -S "$SOCKET" "$@"
+}
+
+# Ensure socket directory exists
+ensure_socket_dir() {
+    mkdir -p "$(dirname "$SOCKET")"
+}
+
+# Get full session name with prefix
+full_name() {
+    echo "${SESSION_PREFIX}$1"
+}
+
+# Check if session exists
+session_exists() {
+    tmux_cmd has-session -t "$1" 2>/dev/null
+}
+
+# Main command dispatcher
+check_tmux
+ensure_socket_dir
+
+if [[ $# -eq 0 ]]; then
+    show_help
+    exit 0
+fi
+
+cmd="$1"
+shift
+
+case "$cmd" in
+    start)
+        if [[ $# -lt 2 ]]; then
+            echo "Usage: test start <name> <command...>" >&2
+            exit 1
+        fi
+        name="$1"; shift
+        full="$(full_name "$name")"
+        if session_exists "$full"; then
+            echo "Error: Session '$name' already exists" >&2
+            exit 1
+        fi
+        tmux_cmd new-session -d -s "$full" -x "$DEFAULT_WIDTH" -y "$DEFAULT_HEIGHT" "$@"
+        echo "Started session: $name"
+        ;;
+
+    stop)
+        if [[ $# -lt 1 ]]; then
+            echo "Usage: test stop <name>" >&2
+            exit 1
+        fi
+        name="$1"
+        full="$(full_name "$name")"
+        if session_exists "$full"; then
+            # Send double Ctrl+C for TUIs that require it
+            tmux_cmd send-keys -t "$full" C-c C-c 2>/dev/null || true
+            sleep 0.5
+            tmux_cmd kill-session -t "$full" 2>/dev/null || true
+            echo "Stopped session: $name"
+        else
+            echo "Session '$name' not found" >&2
+            exit 1
+        fi
+        ;;
+
+    kill)
+        if [[ $# -lt 1 ]]; then
+            echo "Usage: test kill <name>" >&2
+            exit 1
+        fi
+        name="$1"
+        full="$(full_name "$name")"
+        tmux_cmd kill-session -t "$full" 2>/dev/null || true
+        echo "Killed session: $name"
+        ;;
+
+    kill-all)
+        # Kill all test sessions
+        for session in $(tmux_cmd list-sessions -F "#{session_name}" 2>/dev/null | grep "^${SESSION_PREFIX}" || true); do
+            tmux_cmd kill-session -t "$session" 2>/dev/null || true
+        done
+        echo "Killed all test sessions"
+        ;;
+
+    list)
+        tmux_cmd list-sessions -F "#{session_name}" 2>/dev/null | grep "^${SESSION_PREFIX}" | sed "s/^${SESSION_PREFIX}//" || true
+        ;;
+
+    exists)
+        if [[ $# -lt 1 ]]; then
+            echo "Usage: test exists <name>" >&2
+            exit 1
+        fi
+        name="$1"
+        full="$(full_name "$name")"
+        session_exists "$full"
+        ;;
+
+    send)
+        if [[ $# -lt 2 ]]; then
+            echo "Usage: test send <name> <keys...>" >&2
+            exit 1
+        fi
+        name="$1"; shift
+        full="$(full_name "$name")"
+        if ! session_exists "$full"; then
+            echo "Error: Session '$name' not found" >&2
+            exit 1
+        fi
+        for key in "$@"; do
+            case "$key" in
+                Enter|C-m) tmux_cmd send-keys -t "$full" C-m ;;
+                Escape|C-[) tmux_cmd send-keys -t "$full" Escape ;;
+                Tab) tmux_cmd send-keys -t "$full" Tab ;;
+                BSpace) tmux_cmd send-keys -t "$full" BSpace ;;
+                C-c) tmux_cmd send-keys -t "$full" C-c ;;
+                C-d) tmux_cmd send-keys -t "$full" C-d ;;
+                C-z) tmux_cmd send-keys -t "$full" C-z ;;
+                Up|Down|Left|Right) tmux_cmd send-keys -t "$full" "$key" ;;
+                PageUp|PageDown) tmux_cmd send-keys -t "$full" "$key" ;;
+                Home|End) tmux_cmd send-keys -t "$full" "$key" ;;
+                *) tmux_cmd send-keys -t "$full" "$key" ;;
+            esac
+        done
+        ;;
+
+    send-literal)
+        if [[ $# -lt 2 ]]; then
+            echo "Usage: test send-literal <name> <text>" >&2
+            exit 1
+        fi
+        name="$1"; shift
+        text="$1"
+        full="$(full_name "$name")"
+        if ! session_exists "$full"; then
+            echo "Error: Session '$name' not found" >&2
+            exit 1
+        fi
+        tmux_cmd send-keys -l -t "$full" "$text"
+        ;;
+
+    send-file)
+        if [[ $# -lt 2 ]]; then
+            echo "Usage: test send-file <name> <file>" >&2
+            exit 1
+        fi
+        name="$1"; shift
+        file="$1"
+        full="$(full_name "$name")"
+        if ! session_exists "$full"; then
+            echo "Error: Session '$name' not found" >&2
+            exit 1
+        fi
+        if [[ ! -f "$file" ]]; then
+            echo "Error: File '$file' not found" >&2
+            exit 1
+        fi
+        tmux load-buffer -S "$SOCKET" "$file" && tmux_cmd paste-buffer -t "$full"
+        ;;
+
+    capture)
+        if [[ $# -lt 1 ]]; then
+            echo "Usage: test capture <name>" >&2
+            exit 1
+        fi
+        name="$1"
+        full="$(full_name "$name")"
+        if ! session_exists "$full"; then
+            echo "Error: Session '$name' not found" >&2
+            exit 1
+        fi
+        tmux_cmd capture-pane -p -t "$full"
+        ;;
+
+    capture-full)
+        if [[ $# -lt 1 ]]; then
+            echo "Usage: test capture-full <name>" >&2
+            exit 1
+        fi
+        name="$1"
+        full="$(full_name "$name")"
+        if ! session_exists "$full"; then
+            echo "Error: Session '$name' not found" >&2
+            exit 1
+        fi
+        tmux_cmd capture-pane -p -S - -t "$full"
+        ;;
+
+    wait)
+        if [[ $# -lt 2 ]]; then
+            echo "Usage: test wait <name> <pattern> [timeout]" >&2
+            exit 1
+        fi
+        name="$1"; shift
+        pattern="$1"; shift
+        timeout="${1:-30}"
+        full="$(full_name "$name")"
+        if ! session_exists "$full"; then
+            echo "Error: Session '$name' not found" >&2
+            exit 1
+        fi
+
+        elapsed=0
+        while [[ $elapsed -lt $timeout ]]; do
+            if tmux_cmd capture-pane -p -t "$full" | grep -qE "$pattern"; then
+                exit 0
+            fi
+            sleep 1
+            ((elapsed++))
+        done
+        echo "Timeout waiting for pattern: $pattern" >&2
+        exit 124
+        ;;
+
+    contains)
+        if [[ $# -lt 2 ]]; then
+            echo "Usage: test contains <name> <text>" >&2
+            exit 1
+        fi
+        name="$1"; shift
+        text="$*"
+        full="$(full_name "$name")"
+        if ! session_exists "$full"; then
+            echo "Error: Session '$name' not found" >&2
+            exit 1
+        fi
+        if tmux_cmd capture-pane -p -t "$full" | grep -qF "$text"; then
+            exit 0
+        else
+            echo "Screen does not contain: $text" >&2
+            exit 1
+        fi
+        ;;
+
+    match)
+        if [[ $# -lt 2 ]]; then
+            echo "Usage: test match <name> <regex>" >&2
+            exit 1
+        fi
+        name="$1"; shift
+        regex="$1"
+        full="$(full_name "$name")"
+        if ! session_exists "$full"; then
+            echo "Error: Session '$name' not found" >&2
+            exit 1
+        fi
+        if tmux_cmd capture-pane -p -t "$full" | grep -qE "$regex"; then
+            exit 0
+        else
+            echo "Screen does not match: $regex" >&2
+            exit 1
+        fi
+        ;;
+
+    help|--help|-h)
+        show_help
+        ;;
+
+    *)
+        echo "Unknown command: $cmd" >&2
+        echo "Run 'test help' for usage" >&2
+        exit 1
+        ;;
+esac

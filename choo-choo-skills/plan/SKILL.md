@@ -1,16 +1,18 @@
 ---
-name: ticket-planning
+name: plan
 description: Long-horizon task planning using markdown tickets with dependency tracking. Use for breaking down complex multi-session work into structured tickets (epics, stories, tasks). Invoke when planning features spanning multiple coding sessions, creating project roadmaps, or when work needs to survive context limits. Use agent's builtin todo for immediate tasks; use this skill for work that persists across sessions.
 license: MIT
 compatibility: Requires bash, git. Optional: rg (ripgrep) for faster searches.
 metadata:
   version: "1.0.0"
-  author: agent-skills
+  author: choo-choo-skills
 ---
 
-# Ticket Planning Skill
+# Plan Skill
 
 This skill provides structured long-horizon task management using the `tk` ticket system. Tickets are markdown files that persist in the repository, surviving across coding sessions and context windows.
+
+Part of the [choo-choo-skills](../) collection.
 
 ## When to Use This Skill
 
@@ -57,22 +59,22 @@ alias tk='./scripts/ticket'
 
 ---
 
-## Relationship with Prompt-Driven Development
+## Relationship with Design Skill
 
-This skill works in concert with the **prompt-driven-development** skill:
+This skill works in concert with the **design** skill:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                    SKILL WORKFLOW                                │
 │                                                                  │
-│  PROMPT-DRIVEN DEVELOPMENT                                      │
+│  DESIGN SKILL                                                   │
 │  (Exploration & Design)                                         │
 │         ↓                                                        │
 │  specs/{task-name}/design.md   ─────────┐                       │
-│  specs/{task-name}/plan.md     ─────────┼──→ TICKET PLANNING    │
+│  specs/{task-name}/plan.md     ─────────┼──→ PLAN SKILL         │
 │                                          │    (Decomposition)    │
 │                                          │         ↓             │
-│                                          │    tickets/           │
+│                                          │    .tickets/          │
 │                                          │    ├── epic-*.md      │
 │                                          │    ├── story-*.md     │
 │                                          │    └── task-*.md      │
@@ -81,11 +83,11 @@ This skill works in concert with the **prompt-driven-development** skill:
 ```
 
 **When to use which skill:**
-- **prompt-driven-development**: Rough idea → Clarified requirements → Design → Plan
-- **ticket-planning**: Design → Decomposed tickets → Execution tracking
+- **design**: Rough idea → Clarified requirements → Design → Plan
+- **plan**: Design → Decomposed tickets → Execution tracking
 
-If you have a design document (from PDD or otherwise), proceed to Planning Workflow.
-If you're starting from scratch with a vague idea, use prompt-driven-development first.
+If you have a design document (from design skill or otherwise), proceed to Planning Workflow.
+If you're starting from scratch with a vague idea, use design skill first.
 
 ---
 
@@ -128,9 +130,11 @@ When executing a plan, follow this strict cycle for EACH ticket:
 │         ↓                                                        │
 │  6. VERIFY all Definition of Done criteria met                  │
 │         ↓                                                        │
-│  7. CLOSE ticket, COMMIT, PUSH                                  │
+│  7. COMMIT (one commit per ticket - non-negotiable)             │
 │         ↓                                                        │
-│  8. REPEAT from step 1                                          │
+│  8. CLOSE ticket                                                │
+│         ↓                                                        │
+│  9. REPEAT from step 1                                          │
 │                                                                  │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -143,12 +147,12 @@ See [Execution Procedures](references/execution-procedures.md) for full details.
 
 ### 0. Input Source
 
-**If coming from prompt-driven-development:**
+**If coming from design skill:**
 - Read `specs/{task-name}/design.md` — this is your source of truth
 - Read `specs/{task-name}/plan.md` — this provides high-level steps
 - Skip to Phase 2 (Decomposition) using these as inputs
 
-**If starting fresh (no PDD output):**
+**If starting fresh (no design output):**
 - Begin with Phase 1 (Discovery)
 
 ### 1. Discovery Phase
@@ -166,6 +170,8 @@ Break work into hierarchical tickets:
 - **Story**: User-facing functionality (1-3 days)
 - **Task**: Technical implementation unit (hours to 1 day)
 - **Sub-task**: Granular implementation detail
+
+**Atomic Ticket Principle**: Each task ticket should be small enough to complete in a single focused session. A task = one commit. If a ticket needs multiple commits, split it.
 
 See [Ticket Templates](references/ticket-templates.md) for required sections per type.
 
@@ -250,4 +256,4 @@ For hierarchy: "This task belongs to this story"
 
 ## Related Skills
 
-- **prompt-driven-development** - Use this skill first when starting with a vague idea or unclear requirements. It produces the design.md and plan.md that this skill consumes.
+- **design** - Use this skill first when starting with a vague idea or unclear requirements. It produces the design.md and plan.md that this skill consumes.

@@ -2,6 +2,25 @@
 
 This directory contains various agent skills that are being maintained and developed by the user.
 
+## choo-choo-skills
+
+A collection of skills for structured development workflows. Located in `choo-choo-skills/`:
+
+| Skill | Purpose |
+|-------|---------|
+| `choo-choo` (meta) | Orchestrates the full workflow |
+| `design` | Transform ideas into requirements + architecture |
+| `plan` | Decompose design into ticket tree |
+| `validate` | Verify plan is executable |
+| `execute` | Implement a single ticket |
+| `verify` | Confirm implementation matches criteria |
+| `close-gaps` | Fix discrepancies found by verify |
+| `tmux-test` | Test CLI/TUI apps in isolated tmux sessions |
+
+These skills can be used:
+- Directly in Crush (`crush run "use the design skill..."`)
+- Via the choo-choo TUI for visual orchestration
+
 ## Agent Skills Specification
 
 This repository includes a clone of the official [Agent Skills specification](https://agentskills.io) in `.read-only/agentskills/`. All skills in this directory must adhere to this specification.
