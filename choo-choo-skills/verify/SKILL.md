@@ -56,6 +56,42 @@ Invoke this skill when:
 - Code follows project conventions
 - No obvious security issues or code smells
 
+## Testing Requirements
+
+### When to Use test Skill
+
+**MANDATORY** for any of these:
+- CLI applications (interactive or non-interactive)
+- TUI applications
+- Long-running processes (servers, workers)
+- End-to-end tests
+- Integration tests involving process lifecycle
+
+**Use the [test](../test/) skill for these - NEVER raw tmux or blocking bash.**
+
+### When Unit Tests Suffice
+
+For pure functions, libraries, and internal logic, standard unit tests are appropriate:
+```bash
+npm test
+go test ./...
+pytest
+```
+
+### Verification Test Pattern
+
+```bash
+# Start with test run for simple lifecycle tests
+test run app "./my-app" -- --wait "Ready" --expect "Feature works"
+
+# For complex scenarios, use step-by-step
+test start app "./my-app"
+test wait app "Ready" 30
+test send app Down Enter
+test assert app contains "Success"
+test stop app
+```
+
 ## Output
 
 ### Verification Report

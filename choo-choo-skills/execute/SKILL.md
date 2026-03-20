@@ -78,6 +78,43 @@ Invoke this skill when:
 - `focus` set during execution, cleared on completion
 - Any learnings added
 
+## Testing During Execution
+
+### Unit Tests
+
+Write standard unit tests for:
+- Pure functions
+- Library code
+- Internal logic
+
+```bash
+npm test
+go test ./...
+pytest
+```
+
+### Integration Tests (MANDATORY for CLI/TUI/Processes)
+
+**Use the [test](../test/) skill for any of these:**
+- CLI applications (interactive or non-interactive)
+- TUI applications
+- Long-running processes
+- End-to-end tests
+
+**NEVER use raw tmux or blocking bash for testing.**
+
+```bash
+# Preferred: one-shot test run
+test run app "./my-app" -- --wait "Ready" --expect "Feature works"
+
+# Step-by-step for complex scenarios
+test start app "./my-app"
+test wait app "Ready" 30
+test send app Down Enter
+test assert app contains "Success"
+test stop app
+```
+
 ## Example Invocation
 
 ```bash

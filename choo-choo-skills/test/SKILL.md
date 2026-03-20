@@ -12,6 +12,32 @@ metadata:
 
 Run automated tests for CLI applications, TUIs, and long-running processes in isolated tmux sessions. This is the primary testing tool in the choo-choo workflow.
 
+## ⚠️ CRITICAL: Always Use This Skill, Never Raw tmux
+
+**NEVER run raw tmux commands or blocking bash commands for testing.**
+
+❌ **FORBIDDEN:**
+```bash
+sleep 15 && tmux -S .tmp/agent.sock capture-pane -p -t test-myapp
+tmux -S "$SOCKET" send-keys -t test-app "hello"
+sleep 30  # waiting for something
+```
+
+Why these are dangerous:
+- **Blocks the agent** - Agent cannot proceed until command completes
+- **Requires user cancellation** - User must manually interrupt
+- **Wrong socket** - May connect to user's tmux instead of isolated test socket
+- **No timeout safety** - Can hang indefinitely
+
+✅ **REQUIRED:**
+```bash
+test wait myapp "Ready" 30        # Non-blocking wait with timeout
+test capture myapp                # Instant capture
+test run app "./app" -- --wait "Ready" --expect "Menu"  # Full lifecycle
+```
+
+**The test skill commands are non-blocking and have built-in timeouts.**
+
 ## When to Use
 
 - **verify skill** - Test that implementations meet acceptance criteria
@@ -94,6 +120,36 @@ test contains <name> <text>
 
 # Assert screen matches regex
 test match <name> <regex>
+```
+
+### One-Shot Commands (PREFERRED for simple tests)
+
+```bash
+# Full lifecycle in one command - START HERE
+test run <name> <command...> -- [options]
+  --wait <pattern>      Pattern to wait for after start
+  --timeout <seconds>   Timeout for wait (default: 30)
+  --send <keys>         Keys to send after wait (can repeat)
+  --expect <text>       Assert text appears (can repeat)
+  --expect-match <regex> Assert regex matches (can repeat)
+  --capture-on-fail     Auto-capture screen on any failure
+  --keep-alive          Don't stop session after test
+
+# Assert with auto-capture on failure
+test assert <name> contains <text>
+test assert <name> matches <regex>
+test assert <name> exits-within <seconds>
+```
+
+**Example - Full test in one command:**
+```bash
+test run app "./my-app" -- \
+  --wait "Ready" \
+  --timeout 30 \
+  --send Down \
+  --send Enter \
+  --expect "Selected" \
+  --capture-on-fail
 ```
 
 ## Special Keys

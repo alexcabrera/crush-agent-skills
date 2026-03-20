@@ -35,12 +35,36 @@ Assertions:
   contains <name> <text>           Assert screen contains text
   match <name> <regex>             Assert screen matches regex
 
+One-Shot Commands:
+  run <name> <cmd...> -- [opts]    Full lifecycle in one command
+  assert <name> <type> <args>      Assert with auto-capture on failure
+
+test run options:
+  --wait <pattern>      Pattern to wait for after start
+  --timeout <seconds>   Timeout for wait (default: 30)
+  --send <keys>         Keys to send after wait (can repeat)
+  --expect <text>       Assert text appears (can repeat)
+  --expect-match <regex> Assert regex matches (can repeat)
+  --capture-on-fail     Auto-capture screen on any failure
+  --keep-alive          Don't stop session after test
+
+test assert types:
+  contains <text>       Assert screen contains text
+  matches <regex>       Assert screen matches regex
+  exits-within <secs>   Assert process exits within N seconds
+
 Examples:
   test start my-app "./my-app"
   test wait my-app "Welcome" 5
   test send my-app q
   test capture my-app
   test stop my-app
+
+  # One-shot full lifecycle
+  test run app "./my-app" -- --wait "Ready" --expect "Menu"
+
+  # Assert with auto-capture
+  test assert app contains "Success"
 
 Special Keys: Enter, Escape, Tab, BSpace, C-c, C-d, C-z, Up, Down, Left, Right, PageUp, PageDown, Home, End
 
@@ -314,6 +338,234 @@ case "$cmd" in
             echo "Screen does not match: $regex" >&2
             exit 1
         fi
+        ;;
+
+    run)
+        # Full lifecycle: start, wait, optional sends, assert, stop
+        # Usage: test run <name> <command...> --wait <pattern> [--timeout N] [--send "keys"] [--expect "text"] [--capture-on-fail]
+        if [[ $# -lt 2 ]]; then
+            cat << 'EOF' >&2
+Usage: test run <name> <command...> -- [options]
+
+Options:
+  --wait <pattern>      Pattern to wait for after start (default: wait 2s)
+  --timeout <seconds>   Timeout for wait (default: 30)
+  --send <keys>         Keys to send after wait (can repeat)
+  --expect <text>       Assert text appears after sends (can repeat)
+  --expect-match <regex> Assert regex matches after sends (can repeat)
+  --capture-on-fail     Auto-capture screen on any failure
+  --keep-alive          Don't stop session after test
+
+Examples:
+  test run app "./my-app" -- --wait "Ready" --expect "Menu"
+  test run api "go run ./cmd/api" -- --wait "listening" --timeout 60
+  test run tui "./tui" -- --wait "Welcome" --send "Down" --send Enter --expect "Selected"
+EOF
+            exit 1
+        fi
+
+        name="$1"; shift
+        full="$(full_name "$name")"
+
+        # Collect command until --
+        cmd_args=()
+        while [[ $# -gt 0 ]] && [[ "$1" != "--" ]]; do
+            cmd_args+=("$1")
+            shift
+        done
+        [[ "$1" == "--" ]] && shift
+
+        # Parse options
+        wait_pattern=""
+        timeout=30
+        sends=()
+        expects=()
+        expect_matches=()
+        capture_on_fail=false
+        keep_alive=false
+
+        while [[ $# -gt 0 ]]; do
+            case "$1" in
+                --wait) wait_pattern="$2"; shift 2 ;;
+                --timeout) timeout="$2"; shift 2 ;;
+                --send) sends+=("$2"); shift 2 ;;
+                --expect) expects+=("$2"); shift 2 ;;
+                --expect-match) expect_matches+=("$2"); shift 2 ;;
+                --capture-on-fail) capture_on_fail=true; shift ;;
+                --keep-alive) keep_alive=true; shift ;;
+                *) echo "Unknown option: $1" >&2; exit 1 ;;
+            esac
+        done
+
+        # Start session
+        if session_exists "$full"; then
+            echo "Error: Session '$name' already exists" >&2
+            exit 1
+        fi
+        tmux_cmd new-session -d -s "$full" -x "$DEFAULT_WIDTH" -y "$DEFAULT_HEIGHT" "${cmd_args[@]}"
+        echo "Started: $name"
+
+        # Wait for pattern or default delay
+        if [[ -n "$wait_pattern" ]]; then
+            echo "Waiting for: $wait_pattern (timeout: ${timeout}s)"
+            elapsed=0
+            while [[ $elapsed -lt $timeout ]]; do
+                if tmux_cmd capture-pane -p -t "$full" | grep -qE "$wait_pattern"; then
+                    echo "Found: $wait_pattern"
+                    break
+                fi
+                sleep 1
+                ((elapsed++))
+            done
+            if [[ $elapsed -ge $timeout ]]; then
+                echo "FAIL: Timeout waiting for: $wait_pattern" >&2
+                if $capture_on_fail; then
+                    echo "=== Screen capture ==="
+                    tmux_cmd capture-pane -p -t "$full"
+                fi
+                $keep_alive || tmux_cmd kill-session -t "$full" 2>/dev/null || true
+                exit 124
+            fi
+        else
+            sleep 2
+        fi
+
+        # Send keys
+        for send_args in "${sends[@]}"; do
+            echo "Sending: $send_args"
+            # Parse send_args as space-separated keys
+            for key in $send_args; do
+                case "$key" in
+                    Enter|C-m) tmux_cmd send-keys -t "$full" C-m ;;
+                    Escape|C-[) tmux_cmd send-keys -t "$full" Escape ;;
+                    Tab) tmux_cmd send-keys -t "$full" Tab ;;
+                    BSpace) tmux_cmd send-keys -t "$full" BSpace ;;
+                    C-c) tmux_cmd send-keys -t "$full" C-c ;;
+                    C-d) tmux_cmd send-keys -t "$full" C-d ;;
+                    Up|Down|Left|Right) tmux_cmd send-keys -t "$full" "$key" ;;
+                    *) tmux_cmd send-keys -t "$full" "$key" ;;
+                esac
+            done
+            sleep 0.5
+        done
+
+        # Check expects
+        failed=false
+        for expect_text in "${expects[@]}"; do
+            echo "Expecting: $expect_text"
+            if tmux_cmd capture-pane -p -t "$full" | grep -qF "$expect_text"; then
+                echo "  ✓ Found"
+            else
+                echo "  ✗ NOT FOUND" >&2
+                failed=true
+            fi
+        done
+
+        # Check expect-matches
+        for expect_regex in "${expect_matches[@]}"; do
+            echo "Expecting match: $expect_regex"
+            if tmux_cmd capture-pane -p -t "$full" | grep -qE "$expect_regex"; then
+                echo "  ✓ Matched"
+            else
+                echo "  ✗ NO MATCH" >&2
+                failed=true
+            fi
+        done
+
+        if $failed; then
+            echo "FAIL: Assertions failed" >&2
+            if $capture_on_fail || [[ ${#expects[@]} -gt 0 ]] || [[ ${#expect_matches[@]} -gt 0 ]]; then
+                echo "=== Screen capture ==="
+                tmux_cmd capture-pane -p -t "$full"
+            fi
+            $keep_alive || tmux_cmd kill-session -t "$full" 2>/dev/null || true
+            exit 1
+        fi
+
+        echo "PASS: All assertions passed"
+
+        # Stop unless keep-alive
+        if ! $keep_alive; then
+            tmux_cmd send-keys -t "$full" C-c C-c 2>/dev/null || true
+            sleep 0.5
+            tmux_cmd kill-session -t "$full" 2>/dev/null || true
+            echo "Stopped: $name"
+        fi
+        exit 0
+        ;;
+
+    assert)
+        # One-shot assertion with auto-capture on failure
+        # Usage: test assert <name> contains <text>
+        #        test assert <name> matches <regex>
+        #        test assert <name> exits-within <seconds>
+        if [[ $# -lt 3 ]]; then
+            cat << 'EOF' >&2
+Usage: test assert <name> <assertion-type> <args...>
+
+Assertion Types:
+  contains <text>       Assert screen contains text
+  matches <regex>       Assert screen matches regex
+  exits-within <secs>   Assert process exits within N seconds
+
+Auto-captures screen on failure for debugging.
+EOF
+            exit 1
+        fi
+
+        assert_name="$1"; shift
+        assert_type="$1"; shift
+        assert_full="$(full_name "$assert_name")"
+
+        case "$assert_type" in
+            contains)
+                text="$*"
+                if tmux_cmd capture-pane -p -t "$assert_full" | grep -qF "$text"; then
+                    echo "PASS: Screen contains '$text'"
+                    exit 0
+                else
+                    echo "FAIL: Screen does not contain '$text'" >&2
+                    echo "=== Screen capture ==="
+                    tmux_cmd capture-pane -p -t "$assert_full"
+                    exit 1
+                fi
+                ;;
+
+            matches)
+                regex="$1"
+                if tmux_cmd capture-pane -p -t "$assert_full" | grep -qE "$regex"; then
+                    echo "PASS: Screen matches '$regex'"
+                    exit 0
+                else
+                    echo "FAIL: Screen does not match '$regex'" >&2
+                    echo "=== Screen capture ==="
+                    tmux_cmd capture-pane -p -t "$assert_full"
+                    exit 1
+                fi
+                ;;
+
+            exits-within)
+                max_seconds="$1"
+                elapsed=0
+                while [[ $elapsed -lt $max_seconds ]]; do
+                    if ! session_exists "$assert_full"; then
+                        echo "PASS: Process exited within ${elapsed}s"
+                        exit 0
+                    fi
+                    sleep 1
+                    ((elapsed++))
+                done
+                echo "FAIL: Process still running after ${max_seconds}s" >&2
+                echo "=== Screen capture ==="
+                tmux_cmd capture-pane -p -t "$assert_full"
+                exit 1
+                ;;
+
+            *)
+                echo "Unknown assertion type: $assert_type" >&2
+                exit 1
+                ;;
+        esac
         ;;
 
     help|--help|-h)
