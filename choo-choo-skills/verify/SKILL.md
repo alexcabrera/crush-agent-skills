@@ -91,29 +91,19 @@ Result: GAPS FOUND
 
 ## Handoff
 
-**On pass:**
-> "Verification passed. T-003 is complete. Ready for next ticket or done."
+**On pass (single ticket):**
+> "Verification passed. T-003 is complete. Ready for next ticket."
+
+**On pass (epic complete):**
+When all tickets in an epic are verified:
+> "Verification passed. All tickets in epic complete. Invoke the `document` skill to update README.md before reporting completion."
 
 **On gaps found:**
 > "Verification found 1 gap. Invoke the `close-gaps` skill to fix."
-
-## Example Invocation
-
-```bash
-# Via Crush
-> Use the verify skill to check T-003
-
-# The skill will:
-# 1. Read .tickets/T-003-*.md
-# 2. Extract acceptance criteria
-# 3. Review implementation code
-# 4. Run tests
-# 5. Produce verification report
-# 6. Recommend next action
-```
 
 ## Related Skills
 
 - [execute](../execute/) - Creates the implementation this skill verifies
 - [close-gaps](../close-gaps/) - Fixes issues found during verification
+- [document](../document/) - Updates README.md after epic completion
 - [test](../test/) - Run automated tests for CLI/TUI applications

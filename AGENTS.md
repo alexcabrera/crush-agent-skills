@@ -16,6 +16,7 @@ A collection of skills for structured development workflows. Located in `choo-ch
 | `execute` | Implement a single ticket |
 | `verify` | Confirm implementation matches criteria |
 | `close-gaps` | Fix discrepancies found by verify |
+| `document` | Generate comprehensive README.md documentation |
 | `test` | Test CLI/TUI apps in isolated sessions |
 
 These skills can be used:

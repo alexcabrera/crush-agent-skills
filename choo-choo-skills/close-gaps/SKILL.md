@@ -119,4 +119,5 @@ Gaps Found:
 
 - [verify](../verify/) - Finds gaps this skill fixes, re-checks after fix
 - [execute](../execute/) - Original implementation that may need fixing
+- [document](../document/) - Updates README.md after epic completion
 - [test](../test/) - Run automated tests to verify fixes

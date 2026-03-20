@@ -41,6 +41,9 @@ A complete development workflow that takes you from rough idea to verified imple
 │  6. CLOSE-GAPS (if needed)                                      │
 │     Gaps → Fixes → Re-verify                                    │
 │            ↓                                                     │
+│  7. DOCUMENT                                                    │
+│     Code → README.md (comprehensive, from scratch)              │
+│            ↓                                                     │
 │  DONE                                                           │
 │                                                                  │
 └─────────────────────────────────────────────────────────────────┘
@@ -57,6 +60,7 @@ A complete development workflow that takes you from rough idea to verified imple
 | [execute](execute/) | Execution | Implementing a specific ticket | Code, tests |
 | [verify](verify/) | Verification | Ticket implemented, needs checking | Verification report |
 | [close-gaps](close-gaps/) | Gap Closure | Verification found issues | Fixed code, updated tests |
+| [document](document/) | Documentation | Epic verified, update README | README.md |
 | [test](test/) | Testing | Testing CLI/TUI applications | Test results |
 
 ## Quick Start
