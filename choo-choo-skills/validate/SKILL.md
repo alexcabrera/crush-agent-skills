@@ -38,6 +38,13 @@ Invoke this skill when:
 - tk CLI is available
 - STATE.md exists with valid epic reference
 
+### 4. Test Strategy Validation
+- CLI/TUI/process tickets include [test](../test/) skill in acceptance criteria
+- No tickets reference raw `tmux` or blocking `sleep` commands for testing
+- Integration test tickets explicitly require test skill usage
+
+**Why this matters:** Raw tmux commands block the agent and require user cancellation. The test skill provides non-blocking commands with built-in timeouts.
+
 ## Output
 
 ### Validation Report
@@ -54,6 +61,10 @@ Invoke this skill when:
 ✓ Environment ready
   - All skills present
   - tk CLI available
+
+✓ Test strategy
+  - 3/3 CLI/TUI tickets require test skill
+  - No raw tmux/sleep commands found
 
 Execution Order:
   Level 0: T-001, T-002, T-003 (can run in parallel)

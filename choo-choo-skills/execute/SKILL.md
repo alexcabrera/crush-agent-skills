@@ -1,6 +1,6 @@
 ---
 name: execute
-description: Implements a single ticket by writing code and tests. Use when you have a validated ticket plan and want to implement a specific ticket. Follows TDD: writes tests first, then implementation. Updates ticket status and STATE.md. Part of choo-choo-skills collection.
+description: "Implements a single ticket by writing code and tests. Use when you have a validated ticket plan and want to implement a specific ticket. Follows TDD: writes tests first, then implementation. Updates ticket status and STATE.md. Part of choo-choo-skills collection."
 license: MIT
 compatibility: Requires bash, git, tk CLI.
 metadata:

@@ -2,7 +2,7 @@
 name: plan
 description: Long-horizon task planning using markdown tickets with dependency tracking. Use for breaking down complex work into structured tickets (epics, stories, tasks). Invoke when planning features spanning multiple context windows, creating project roadmaps, or when work needs to survive context limits. Use agent's builtin todo for immediate tasks; use this skill for work that persists across context resets.
 license: MIT
-compatibility: Requires bash, git. Optional: rg (ripgrep) for faster searches.
+compatibility: "Requires bash, git. Optional: rg (ripgrep) for faster searches."
 metadata:
   version: "1.0.0"
   author: choo-choo-skills
@@ -220,6 +220,7 @@ Self-reflective checks before finalizing:
 - [ ] All affected files/areas are covered
 - [ ] Testing strategy is defined per ticket
 - [ ] Documentation tickets created for all features
+- [ ] CLI/TUI/process tickets include test skill requirements
 
 **Dependency Check:**
 - [ ] `./scripts/ticket dep cycle` returns no cycles
@@ -243,6 +244,24 @@ When ready to execute:
 1. Run `./scripts/ticket ready` to see unblocked tickets
 2. Follow [Execution Procedures](references/execution-procedures.md)
 3. Load one ticket at a time into agent's builtin todo
+
+---
+
+## Testing Requirements
+
+For any ticket involving **CLI applications, TUIs, or long-running processes**:
+
+**MANDATORY:** Use the [test](../test/) skill for all interactive testing.
+
+When planning tickets, ensure:
+- CLI/TUI tickets explicitly require the test skill in acceptance criteria
+- Integration test tickets reference test skill commands
+- No raw `tmux` or blocking `sleep` commands in test procedures
+
+**Why this matters:**
+- Raw tmux commands block the agent and require user cancellation
+- The test skill provides non-blocking commands with built-in timeouts
+- See test skill's "CRITICAL" section for forbidden/required patterns
 
 ## Ticket Interlinking Strategy
 

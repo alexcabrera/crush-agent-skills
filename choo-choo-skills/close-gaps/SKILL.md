@@ -76,6 +76,36 @@ Gaps Found:
 - New tests for the gap scenario
 - Updated existing tests if needed
 
+## Testing During Gap Closure
+
+### Unit Test Fixes
+For pure function or logic fixes:
+```bash
+npm test
+go test ./...
+pytest
+```
+
+### CLI/TUI/Process Fixes (MANDATORY test skill)
+**Use the [test](../test/) skill for any fixes involving:**
+- CLI applications
+- TUI applications
+- Long-running processes
+
+**NEVER use raw tmux or blocking bash.**
+
+```bash
+# Preferred: verify fix with one-shot command
+test run app "./my-app" -- --wait "Ready" --expect "Fixed behavior"
+
+# Step-by-step for debugging
+test start app "./my-app"
+test wait app "Ready" 30
+test send app Down Enter
+test assert app contains "Expected output"
+test stop app
+```
+
 ### STATE.md Update
 - `phase` set to `gap-closure`
 - Attempt count incremented
@@ -120,4 +150,4 @@ Gaps Found:
 - [verify](../verify/) - Finds gaps this skill fixes, re-checks after fix
 - [execute](../execute/) - Original implementation that may need fixing
 - [document](../document/) - Updates README.md after epic completion
-- [test](../test/) - Run automated tests to verify fixes
+- [test](../test/) - **MANDATORY** for CLI/TUI/process fixes. Never use raw tmux.

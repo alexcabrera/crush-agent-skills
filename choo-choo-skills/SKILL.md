@@ -5,7 +5,7 @@ description: |
   
   A complete development workflow from idea to implementation. Orchestrates design → plan → validate → execute → verify → close-gaps. Use when starting a new feature or project, or when you want structured development with persistence across context resets. Individual skills can also be used independently.
 license: MIT
-compatibility: Requires bash, git. Optional: rg (ripgrep) for faster searches.
+compatibility: "Requires bash, git. Optional: rg (ripgrep) for faster searches."
 metadata:
   version: "1.0.0"
   author: choo-choo-skills
@@ -48,6 +48,25 @@ A complete development workflow that takes you from rough idea to verified imple
 │                                                                  │
 └─────────────────────────────────────────────────────────────────┘
 ```
+
+## Testing Requirements
+
+For any work involving **CLI applications, TUIs, or long-running processes**:
+
+**MANDATORY:** Use the [test](test/) skill for all interactive testing.
+
+❌ **FORBIDDEN:**
+```bash
+sleep 15 && tmux -S .tmp/agent.sock capture-pane -p -t test-app
+```
+
+✅ **REQUIRED:**
+```bash
+test wait app "Ready" 30
+test capture app
+```
+
+**Why:** Raw tmux commands block the agent and require user cancellation. The test skill provides non-blocking commands with built-in timeouts. This requirement is enforced across all skills: plan, validate, execute, verify, and close-gaps.
 
 ## Skills in This Collection
 

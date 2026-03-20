@@ -371,6 +371,24 @@ If you discover a new blocker mid-task:
 
 ## Integration Testing Flow
 
+### Testing Requirements
+
+For **CLI applications, TUIs, and long-running processes**:
+
+**MANDATORY:** Use the [test](../../test/) skill. NEVER use raw tmux or blocking sleep commands.
+
+❌ **FORBIDDEN:**
+```bash
+sleep 15 && tmux -S .tmp/agent.sock capture-pane -p -t test-app
+```
+
+✅ **REQUIRED:**
+```bash
+test wait app "Ready" 30
+test capture app
+test run app "./myapp" -- --wait "Ready" --expect "Success"
+```
+
 ### When to Run Integration Tests
 
 After completing a story's tasks:
@@ -387,7 +405,7 @@ After completing a story's tasks:
 ### Integration Test Execution
 
 1. Load integration test ticket
-2. Execute each test scenario
+2. Execute each test scenario using test skill commands
 3. Document any failures:
    ```bash
    ./scripts/ticket add-note task-integ-xxx "Scenario 2 failed: [details]"
