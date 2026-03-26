@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# After fixing gaps, re-verify
+echo "verify"
+echo ""
+echo "Gaps fixed, re-verify implementation"
+exit 0

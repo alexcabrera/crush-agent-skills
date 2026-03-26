@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+TICKET_ID="${1:-}"
+
+if [[ -n "$TICKET_ID" ]]; then
+    echo "verify"
+    echo "$TICKET_ID"
+    echo "Ticket implemented, verify against acceptance criteria"
+    exit 0
+fi
+
+# Check if there are more ready tickets
+if [[ -f ".tickets" ]]; then
+    ready=$(find .tickets -name "*.md" -exec grep -l "status: open" {} \; | head -1)
+    if [[ -n "$ready" ]]; then
+        echo "implement"
+        echo "$ready"
+        echo "More tickets ready for implementation"
+        exit 0
+    fi
+fi
+
+echo "document"
+echo ""
+echo "All tickets complete, generate documentation"
+exit 1

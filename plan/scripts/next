@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# After planning completes, user should approve then execute
+# Check if tickets exist
+if [[ -d ".tickets" ]] && find .tickets -name "*.md" | head -1 | grep -q .; then
+    echo "execute"
+    echo ""
+    echo "Tickets created, ready for autonomous execution"
+    exit 0
+fi
+
+echo "plan"
+echo ""
+echo "Continue planning - no tickets yet"
+exit 0

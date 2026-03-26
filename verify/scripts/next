@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+VERIFICATION_RESULT="${VERIFICATION_RESULT:-pass}"
+
+if [[ "$VERIFICATION_RESULT" == "pass" ]]; then
+    echo "document"
+    echo ""
+    echo "Verification passed, generate documentation"
+    exit 0
+else
+    echo "close-gaps"
+    echo ""
+    echo "Gaps found, fix discrepancies"
+    exit 0
+fi

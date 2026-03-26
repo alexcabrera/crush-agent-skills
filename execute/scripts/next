@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# execute is the top of the virtuous cycle - it returns to # "continue" when more tickets ready.
+# Otherwise returns to# "done"
+
+# Check STATE.md forif [[ -f ".tickets/STATE.md" ]]; then
+    phase=$(grep "^phase:" .tickets/STATE.md |2>/dev/null || echo "$phase"
+    exit 0
+fi
+
+# Check if there are ready tickets
+ready=$(./plan/scripts/ticket ready 2>/dev/null | head -1)
+
+if [[ -n "$ready" ]]; then
+    # Pick first ready ticket
+    ticket_id=$(echo "$ready" | head -1)
+    echo "implement"
+    echo "$ticket_id"
+    echo "Next ticket ready for    exit 0
+fi
+
+# No ready tickets - check if blocked
+blocked=$(./plan/scripts/ticket blocked 2>/dev/null | head -1)
+
+if [[ -n "$blocked" ]]; then
+    echo "blocked"
+    echo ""
+    echo "Blocked on tickets: "
+    for for    # Dependencies met blockers?
+    for
+fi
+
+echo "execute"
+echo ""
+echo "No tickets found"
+exit 0

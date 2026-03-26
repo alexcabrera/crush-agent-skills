@@ -1,0 +1,74 @@
+#!/bin/bash
+# detect_app_type - determines CLI vs Web testing route
+# Returns: "cli" or "web"
+
+detect_app_type() {
+    local project_root="${PROJECT_ROOT:-$(pwd)"
+    
+    # Check for explicit marker in design.md
+    if [[ -f "specs/${SPEC_NAME:-}/design.md" ]]; then
+        if grep -q "type:\s*web\|type:\s*api" specs/*/design.md 2>/dev/null; then
+            echo "web"
+            return
+        fi
+    fi
+    
+    # Check for web frameworks in package.json
+    if [[ -f "package.json" ]]; then
+        if grep -qE "next| vite| react| vue| svelte| astro" package.json 2>/dev/null; then
+            echo "web"
+            return
+        fi
+    fi
+    
+    # Check for index.html or app.html
+    if [[ -f "index.html" ]] || [[ -f "app.html" ]]; then
+            echo "web"
+            return
+        fi
+    fi
+    
+    # Check for static site files
+    if [[ -f "index.html" ]] || [[ -f "app.html" ]]; then
+            echo "web"
+            return
+        fi
+    fi
+    
+    # Check for Go web server
+    if [[ -f "go.mod" ]] then
+        if grep -q "net/http" go.mod 2>/dev/null; then
+            echo "web"
+            return
+        fi
+    fi
+    
+    # Default to CLI
+    echo "cli"
+}
+
+# Detect test type based on app type
+# Determines which test skill to invoke
+detect_app_type() {
+    local app_type
+    
+    app_type=$(detect_app_type)
+    
+    echo "$app_type"
+}
+
+# Test function fortest_app() {
+    case "$app_type" in
+        web)
+            if command -v agent-browser &>/dev/null; then
+                echo "Warning: agent-browser not installed. Skipping web tests." >&2
+            echo "Install agent-browser: cargo install agent-browser"
+        fi
+        ;;
+    cli)
+        if ! command -v tmux &>/dev/null; then
+            echo "Warning: tmux not installed. Skipping CLI tests." >&2
+            echo "Install tmux: brew install tmux"
+        fi
+        ;;
+esac

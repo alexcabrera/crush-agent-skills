@@ -1,56 +1,140 @@
 # Agent Skills Directory
 
-This directory contains various agent skills that are being maintained and developed by the user.
+This directory contains agent skills for structured development workflows. Each skill is a self-contained directory with `SKILL.md`, optional `scripts/`, and `references/`.
 
-## choo-choo-skills
+## Installation
 
-A collection of skills for structured development workflows. Located in `choo-choo-skills/`:
+Symlink this repository to your agent's skills directory:
 
-| Skill | Purpose |
-|-------|---------|
-| `choo-choo` (meta) | Orchestrates the full workflow |
-| `design` | Transform ideas into requirements + architecture |
-| `ui-design` | Design CLI/TUI interfaces and interaction patterns |
-| `plan` | Decompose design into ticket tree |
-| `validate` | Verify plan is executable |
-| `execute` | Implement a single ticket |
-| `verify` | Confirm implementation matches criteria |
-| `close-gaps` | Fix discrepancies found by verify |
-| `document` | Generate comprehensive README.md documentation |
-| `test` | Test CLI/TUI apps in isolated sessions |
+```bash
+# For Crush
+ln -s ~/Code/agent-skills ~/.config/crush/skills/agent-skills
 
-These skills can be used:
-- Directly in Crush (`crush run "use the design skill..."`)
-- Via the choo-choo TUI for visual orchestration
+# For Claude Code
+ln -s ~/Code/agent-skills ~/.claude/skills/agent-skills
+```
+
+---
+
+## Skills Overview
+
+| Skill | Mode | Purpose |
+|-------|------|---------|
+| `elaborate` | Interactive | Transform rough ideas into requirements + architecture |
+| `plan` | Interactive | Decompose design into ticket tree |
+| `execute` | Autonomous | Run virtuous cycle until all tickets complete |
+| `implement` | Either | Implement a single ticket (TDD) |
+| `verify` | Either | Confirm implementation matches acceptance criteria |
+| `close-gaps` | Either | Fix discrepancies found by verify |
+| `document` | Either | Generate comprehensive README.md |
+| `test-cli` | Either | Test CLI/TUI applications via tmux |
+| `test-web` | Either | Test web applications via agent-browser |
+| `ui-design` | Either | Design UI/UX interaction patterns |
+
+---
+
+## Two Modes of Operation
+
+### Interactive Mode
+
+Human in the loop, answering questions, making decisions.
+
+```
+elaborate → plan → [USER APPROVES]
+```
+
+### Autonomous Mode
+
+Hands-off execution of the entire plan.
+
+```
+execute (virtuous cycle until done)
+```
+
+---
+
+## Workflow
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│                    INTERACTIVE MODE                           │
+│                                                               │
+│  1. elaborate  - Clarify requirements, design architecture  │
+│  2. plan       - Break into tickets with dependencies        │
+│  3. [approve]  - User reviews and approves the plan          │
+│                                                               │
+└──────────────────────────────────────────────────────────────┘
+                         ↓
+┌──────────────────────────────────────────────────────────────┐
+│                    AUTONOMOUS MODE (execute)                  │
+│                                                               │
+│  while tickets remain:                                        │
+│    pick ticket → implement → test → verify → fix if needed   │
+│  done:                                                        │
+│    generate documentation                                     │
+│                                                               │
+└──────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Script Interfaces
+
+Each skill has two standard scripts:
+
+### `scripts/next`
+
+Determines the next skill in the workflow:
+
+```bash
+./<skill>/scripts/next
+
+# Output:
+# Line 1: skill-name | "done" | "blocked"
+# Line 2: context/argument
+# Line 3: human-readable reason
+```
+
+### `scripts/bootstrap`
+
+Installs or checks dependencies:
+
+```bash
+./<skill>/scripts/bootstrap --check    # Check only
+./<skill>/scripts/bootstrap --install  # Install missing
+```
+
+---
+
+## Testing Split
+
+The execute skill automatically routes to the correct testing skill:
+
+| App Type | Skill | Tool |
+|----------|-------|------|
+| CLI/TUI | `test-cli` | tmux |
+| Web | `test-web` | agent-browser |
+
+Detection is based on project structure (package.json, index.html, etc.).
+
+---
+
+## Shared Resources
+
+Cross-skill documentation lives in `shared/`:
+
+- `STATE-structure.md` - State file format
+- `workflow.md` - Overall workflow documentation
+- `bootstrap-template` - Template for bootstrap scripts
+
+---
 
 ## Agent Skills Specification
 
-This repository includes a clone of the official [Agent Skills specification](https://agentskills.io) in `.read-only/agentskills/`. All skills in this directory must adhere to this specification.
+This repository follows the [Agent Skills specification](https://agentskills.io):
 
-## Key Requirements for Agents
-
-When working in this directory, agents must ensure their work always follows the Agent Skills specification as defined in `.read-only/agentskills/docs/specification.mdx`. This includes:
-
-### Skill Structure
-- Each skill must be a directory containing a `SKILL.md` file with YAML frontmatter
-- The `name` field in frontmatter must match the parent directory name
-- Name must be 1-64 characters, lowercase letters/numbers/hyphens only, no leading/trailing hyphens
-- Description field (required, 1-1024 chars) must describe both what the skill does and when to use it
-
-### Optional Directories
-- `scripts/` - Executable code that agents can run
-- `references/` - Additional documentation loaded on demand
-- `assets/` - Static resources like templates and data files
-
-### Progressive Disclosure
-- Keep `SKILL.md` under 500 lines and 5000 tokens when possible
-- Move detailed reference material to separate files
-- Use relative paths when referencing files within a skill
-
-### Validation
-Before creating or modifying skills, verify compliance with the specification. The specification defines the complete format requirements for all skill components.
-
-### Reference
-- Complete specification: `.read-only/agentskills/docs/specification.mdx`
-- Project README: `.read-only/agentskills/README.md`
-- Additional docs: `.read-only/agentskills/docs/`
+- Each skill is a directory with `SKILL.md` (YAML frontmatter + markdown)
+- `name` must match directory name (1-64 chars, lowercase, hyphens)
+- `description` must describe what and when (1-1024 chars)
+- Optional: `scripts/`, `references/`, `assets/`
+- Keep `SKILL.md` under 500 lines when possible

@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# After elaborate completes, the user should run plan
+# Check if design.md exists
+if [[ -f "specs/${SPEC_NAME:-}/design.md" ]]; then
+    echo "plan"
+    echo "specs/${SPEC_NAME:-}/design.md"
+    echo "Design complete, ready for ticket decomposition"
+    exit 0
+fi
+
+# Check if there's any specs directory
+if find specs -name "design.md" 2>/dev/null | head -1 | grep -q .; then
+    spec_dir=$(find specs -name "design.md" | head -1 | xargs dirname)
+    echo "plan"
+    echo "$spec_dir/design.md"
+    echo "Design complete, ready for ticket decomposition"
+    exit 0
+fi
+
+echo "elaborate"
+echo ""
+echo "Design not complete, continue elaboration"
+exit 0

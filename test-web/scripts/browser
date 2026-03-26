@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# test-web scripts/browser - Wrapper for agent-browser with testing conveniences
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SKILL_DIR="$(dirname "$SCRIPT_DIR")"
+
+# Check agent-browser is available
+if ! command -v agent-browser &>/dev/null; then
+    echo "Error: agent-browser not installed"
+    echo "Install with: cargo install agent-browser"
+    exit 1
+fi
+
+# Pass through to agent-browser with all arguments
+exec agent-browser "$@"

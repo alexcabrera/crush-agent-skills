@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# elaborate skill only requires bash and git (standard tools)
+# No external dependencies
+
+echo "ready"
+exit 0

@@ -1,0 +1,105 @@
+#!/usr/bin/env bash
+# bootstrap - Install dependencies for test-cli skill
+#
+# Usage: bootstrap [--check | --install | --json]
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SKILL_NAME="test-cli"
+
+DEPENDENCIES=(
+    "tmux:command -v tmux:Terminal multiplexer for session isolation"
+    "bash:command -v bash:Bourne Again Shell"
+)
+
+declare -A INSTALL_CMD=(
+    ["tmux"]="brew install tmux 2>/dev/null || apt-get install -y tmux 2>/dev/null || dnf install -y tmux 2>/dev/null"
+)
+
+check_dependencies() {
+    local missing=()
+    for dep in "${DEPENDENCIES[@]}"; do
+        local name="${dep%%:*}"
+        local check="${dep#*:}"
+        if ! eval "$check" &>/dev/null; then
+            missing+=("$name")
+        fi
+    done
+    echo "${missing[@]}"
+}
+
+case "${1:-}" in
+    --check)
+        missing=$(check_dependencies)
+        if [[ -n "$missing" ]]; then
+            echo "Missing dependencies for $SKILL_NAME:"
+            for m in ${missing[*]}; do
+                echo "  - $m"
+            done
+            echo ""
+            echo "Run: ./$SKILL_NAME/scripts/bootstrap --install"
+            exit 1
+        fi
+        echo "All dependencies satisfied for $SKILL_NAME"
+        exit 0
+        ;;
+    --install)
+        missing=$(check_dependencies)
+        if [[ -z "$missing" ]]; then
+            echo "All dependencies already installed"
+            exit 0
+        fi
+        echo "Installing missing dependencies for $SKILL_NAME..."
+        for m in ${missing[*]}; do
+            if [[ -n "${INSTALL_CMD[$m]:-}" ]]; then
+                echo "Installing $m..."
+                eval "${INSTALL_CMD[$m]}" || {
+                    echo "Failed to install $m. Please install manually."
+                    exit 2
+                }
+            else
+                echo "No automatic install for $m. Please install manually."
+                exit 1
+            fi
+        done
+        echo "All dependencies installed"
+        exit 0
+        ;;
+    --json)
+        missing=$(check_dependencies)
+        if [[ -z "$missing" ]]; then
+            echo '{"status": "ok", "skill": "'"$SKILL_NAME"'", "dependencies": []}'
+        else
+            deps=$(printf '"%s",' ${missing[*]})
+            deps="${deps%,}"
+            echo '{"status": "missing", "skill": "'"$SKILL_NAME"'", "dependencies": ['"$deps"']}'
+        fi
+        exit 0
+        ;;
+    -h|--help)
+        echo "$SKILL_NAME bootstrap"
+        echo ""
+        echo "Usage: bootstrap [--check | --install | --json]"
+        echo ""
+        echo "This skill requires:"
+        for dep in "${DEPENDENCIES[@]}"; do
+            name="${dep%%:*}"
+            desc="${dep##*:}"
+            echo "  - $name: $desc"
+        done
+        exit 0
+        ;;
+    *)
+        echo "$SKILL_NAME bootstrap"
+        echo ""
+        missing=$(check_dependencies)
+        if [[ -n "$missing" ]]; then
+            echo "Missing: ${missing[*]}"
+            echo ""
+            echo "Run with --install to install, or --check for details"
+        else
+            echo "All dependencies satisfied"
+        fi
+        ;;
+esac

@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# next - Determine next skill after test-cli
+#
+# test-cli is typically used standalone or as part of execute's virtuous cycle.
+# When used standalone, there's no automatic next step.
+# When used by execute, execute manages the flow.
+
+echo "standalone"
+echo ""
+echo "test-cli is a standalone testing skill. No automatic next step."
+exit 1

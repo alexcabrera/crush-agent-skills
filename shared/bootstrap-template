@@ -1,0 +1,143 @@
+#!/usr/bin/env bash
+# bootstrap-template - Template for skill bootstrap scripts
+#
+# Usage: bootstrap [--check | --install | --json]
+#
+# Exit codes:
+#   0 - All dependencies available
+#   1 - Missing dependencies (after --check)
+#   2 - Installation failed
+#
+# Commands:
+#   --check    Check dependencies, output what's missing
+#   --install  Install missing dependencies (may require sudo)
+#   --json     Output in JSON format
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SKILL_NAME="$(basename "$SCRIPT_DIR/..")"
+
+# ============================================================================
+# DEFINE DEPENDENCIES FOR THIS SKILL
+# Format: "name:check_command:description"
+# ============================================================================
+DEPENDENCIES=(
+    # Example: "tmux:command -v tmux:Terminal multiplexer for session isolation"
+    # Add your dependencies here
+)
+
+# ============================================================================
+# INSTALL COMMANDS FOR DEPENDENCIES
+# ============================================================================
+declare -A INSTALL_CMD=(
+    # ["tmux"]="brew install tmux || apt-get install -y tmux"
+)
+
+# ============================================================================
+# HELPER FUNCTIONS
+# ============================================================================
+
+check_dependencies() {
+    local missing=()
+    for dep in "${DEPENDENCIES[@]}"; do
+        local name="${dep%%:*}"
+        local check="${dep#*:}"
+        if ! eval "$check" &>/dev/null; then
+            missing+=("$name")
+        fi
+    done
+    echo "${missing[@]}"
+}
+
+install_dependencies() {
+    local missing
+    missing=$(check_dependencies)
+    
+    if [[ -z "$missing" ]]; then
+        echo "All dependencies already installed"
+        exit 0
+    fi
+    
+    echo "Missing: ${missing[*]}"
+    echo ""
+    echo "Install commands:"
+    for m in "${missing[@]}"; do
+        if [[ -n "${INSTALL_CMD[$m]:-}" ]]; then
+            echo "  ${INSTALL_CMD[$m]}"
+        else
+            echo "  # No automatic install for $m"
+        fi
+    done
+}
+
+output_json() {
+    local missing
+    missing=$(check_dependencies)
+    
+    if [[ -z "$missing" ]]; then
+        echo '{"status": "ok", "skill": "'"$SKILL_NAME"'", "dependencies": []}'
+    else
+        local deps_json
+        deps_json=$(printf '%s\n' "${missing[@]}" | jq -R . | paste -sd -z -n)
+        echo '{"status": "missing", "skill": "'"$SKILL_NAME"'", "dependencies": ['$deps_json']}'
+    fi
+}
+
+# ============================================================================
+# MAIN
+# ============================================================================
+
+case "${1:-}" in
+    --check)
+        missing=$(check_dependencies)
+        if [[ -n "$missing" ]]; then
+            echo "Missing dependencies for $SKILL_NAME:"
+            for m in "${missing[@]}"; do
+                echo "  - $m"
+            done
+            exit 1
+        fi
+        echo "All dependencies satisfied for $SKILL_NAME"
+        exit 0
+        ;;
+    --install)
+        install_dependencies
+        ;;
+    --json)
+        output_json
+        ;;
+    -h|--help)
+        echo "$SKILL_NAME bootstrap"
+        echo ""
+        echo "Usage: bootstrap [--check | --install | --json]"
+        echo ""
+        if [[ ${#DEPENDENCIES[@]} -gt 0 ]]; then
+            echo "This skill requires:"
+            for dep in "${DEPENDENCIES[@]}"; do
+                local name="${dep%%:*}"
+                local desc="${dep##*:}"
+                echo "  - $name: $desc"
+            done
+        else
+            echo "This skill has no external dependencies."
+        fi
+        ;;
+    *)
+        echo "$SKILL_NAME bootstrap"
+        echo ""
+        if [[ ${#DEPENDENCIES[@]} -gt 1 ]]; then
+            echo "Checking dependencies..."
+            missing=$(check_dependencies)
+            if [[ -n "$missing" ]]; then
+                echo "Missing: ${missing[*]}"
+                echo ""
+                echo "Run with --install to install, or --check for details"
+            else
+                echo "All dependencies satisfied"
+            fi
+        else
+            echo "No external dependencies required"
+        fi
+        ;;
+esac

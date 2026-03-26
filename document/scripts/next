@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Check if more tickets remain
+if [[ -f ".tickets/STATE.md" ]]; then
+    # Parse current phase
+    if grep -q "phase: execution" .tickets/STATE.md; then
+        echo "execute"
+        echo ""
+        echo "More tickets ready, continue autonomous cycle"
+        exit 0
+    fi
+fi
+
+echo "done"
+echo ""
+echo "All tickets complete, workflow finished"
+exit 1

@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# plan skill requires:
+# - bash (always available)
+# - git (for ticket discovery in git repos)
+# - fzf (optional, for interactive selection)
+
+missing=()
+
+if ! command -v git &>/dev/null; then
+    missing+=("git")
+fi
+
+if ! command -v fzf &>/dev/null; then
+    # fzf is optional, not required
+    :
+fi
+
+if [[ ${#missing[@]} -eq 0 ]]; then
+    echo "ready"
+    echo "All dependencies satisfied"
+    exit 0
+fi
+
+echo "missing"
+printf '%s\n' "${missing[@]}"
+echo ""
+echo "Install with:"
+for m in "${missing[@]}"; do
+    case "$m" in
+        git) echo "  brew install git" ;;
+    esac
+done
+exit 1

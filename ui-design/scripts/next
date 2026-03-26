@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "elaborate"
+echo ""
+echo "Return to elaboration with UI specifications"
+exit 0

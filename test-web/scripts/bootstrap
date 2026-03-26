@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SKILL_NAME="test-web"
+
+# Dependencies for web testing
+DEPENDENCIES=(
+    "agent-browser:command -v agent-browser:Vercel's AI browser automation tool"
+)
+
+# Install commands
+declare -A INSTALL_CMD=(
+    ["agent-browser"]="cargo install agent-browser"
+)
+
+check_dependencies() {
+    local missing=()
+    for dep in "${DEPENDENCIES[@]}"; do
+        local name="${dep%%:*}"
+        local check="${dep#*:}"
+        if ! eval "$check" &>/dev/null; then
+            missing+=("$name")
+        fi
+    done
+    echo "${missing[@]}"
+}
+
+case "${1:-}" in
+    --check)
+        missing=$(check_dependencies)
+        if [[ -n "$missing" ]]; then
+            echo "Missing dependencies for $SKILL_NAME:"
+            for m in "${missing[@]}"; do
+                echo "  - $m"
+            done
+            exit 1
+        fi
+        echo "All dependencies satisfied for $SKILL_NAME"
+        exit 0
+        ;;
+    --install)
+        missing=$(check_dependencies)
+        if [[ -z "$missing" ]]; then
+            echo "All dependencies already installed"
+            exit 0
+        fi
+        echo "Installing missing dependencies: ${missing[*]}"
+        for m in "${missing[@]}"; do
+            if [[ -n "${INSTALL_CMD[$m]:-}" ]]; then
+                echo "Running: ${INSTALL_CMD[$m]}"
+                eval "${INSTALL_CMD[$m]}" || exit 2
+            fi
+        done
+        echo "Installation complete"
+        exit 0
+        ;;
+    -h|--help)
+        echo "$SKILL_NAME bootstrap"
+        echo ""
+        echo "Usage: bootstrap [--check | --install]"
+        echo ""
+        echo "This skill requires:"
+        echo "  - agent-browser: Vercel's AI browser automation tool"
+        exit 0
+        ;;
+    *)
+        echo "$SKILL_NAME bootstrap"
+        echo ""
+        missing=$(check_dependencies)
+        if [[ -n "$missing" ]]; then
+            echo "Missing: ${missing[*]}"
+            echo ""
+            echo "Run with --install to install"
+        else
+            echo "All dependencies satisfied"
+        fi
+        ;;
+esac

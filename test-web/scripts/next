@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# test-web is typically used independently or called by execute
+# It doesn't chain to another skill in the core workflow
+
+echo "standalone"
+echo ""
+echo "Web testing skill - used independently or invoked by execute skill"
+exit 0
