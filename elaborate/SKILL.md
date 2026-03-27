@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires bash, git.
 metadata:
   version: "1.0.0"
-  author: choo-choo-skills
+  author: agent-skills
 ---
 
 # Design Skill
@@ -331,7 +331,22 @@ These rules apply across ALL steps:
 
 ## Related Skills
 
-- **[ui-design](../ui-design/)** - When design involves CLI/TUI interfaces, invoke ui-design skill for specialized interaction patterns, error handling, and accessibility guidance.
+### Virtuous Cycle
+- [plan](../plan/) - Decomposes design into tickets (next step)
+- [execute](../execute/) - Runs the virtuous cycle autonomously
+- [implement](../implement/) - Implements a single ticket
+- [verify](../verify/) - Confirms implementation matches acceptance criteria
+- [close-gaps](../close-gaps/) - Fixes issues found during verification
+
+### Design Support
+- [ui-design](../ui-design/) - UI/UX patterns for CLI/TUI/web applications
+
+### Testing
+- [test-cli](../test-cli/) - CLI/TUI testing
+- [test-web](../test-web/) - Web application testing
+
+### Documentation
+- [document](../document/) - Generates README.md after epic completion
 
 ---
 

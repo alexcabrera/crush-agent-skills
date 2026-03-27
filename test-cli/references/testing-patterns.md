@@ -190,7 +190,7 @@ Verify error states are handled correctly.
 
 # Run in directory without required files
 cd /tmp/empty-dir
-test start error-test "choo-choo"
+test start error-test "./my-cli"
 
 # Should show error message, not crash
 if test wait error-test "Error|error|No project" 5; then
@@ -210,13 +210,13 @@ else
 fi
 ```
 
-## Pattern 8: Integration with choo-choo Workflow
+## Pattern 8: Integration with the Virtuous Cycle
 
-Test the full choo-choo workflow.
+Test the full agent-skills workflow.
 
 ```bash
 #!/bin/bash
-# test-choo-choo.sh - Integration test for choo-choo
+# test-virtuous-cycle.sh - Integration test for agent-skills workflow
 
 set -e
 
@@ -224,17 +224,17 @@ set -e
 TEST_DIR=$(mktemp -d)
 cd "$TEST_DIR"
 
-# Build choo-choo
-cd /path/to/choo-choo
-go build -o "$TEST_DIR/choo-choo" ./cmd/choo-choo
+# Build CLI
+cd /path/to/my-cli
+go build -o "$TEST_DIR/my-cli" ./cmd/cli
 cd "$TEST_DIR"
 
 # Test 1: Init phase
 echo "Test: Init phase..."
-test start choo-choo "./choo-choo"
-test wait choo-choo "choo-choo" 5
-test contains choo-choo "init"
-test stop choo-choo
+test start app "./my-cli"
+test wait app "Ready" 5
+test contains app "init"
+test stop app
 echo "PASS: Init phase"
 
 # Test 2: STATE.md created

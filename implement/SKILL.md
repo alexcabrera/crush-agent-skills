@@ -1,6 +1,6 @@
 ---
 name: implement
-description: "Implements a single ticket by writing code and tests. Use when you have a validated ticket plan and want to implement a specific ticket. Follows TDD: writes tests first, then implementation. Updates ticket status and STATE.md. Part of choo-choo-skills collection."
+description: Implements a single ticket by writing code and tests. Use when you have a validated ticket plan and want to implement a specific ticket. Follows TDD: writes tests first, then implementation. Updates ticket status and STATE.md.
 license: MIT
 compatibility: Requires bash, git, tk CLI.
 metadata:
@@ -8,7 +8,7 @@ metadata:
   
 ---
 
-# Execute Skill
+# Implement Skill
 
 Implements a single ticket from a validated plan. This skill writes code, creates tests, and ensures the implementation matches the ticket's acceptance criteria.
 
@@ -145,7 +145,15 @@ test stop app
 
 ## Related Skills
 
-- [validate](../validate/) - Ensures ticket is ready for execution
+### Virtuous Cycle
+- [execute](../execute/) - Orchestrates the full cycle including this skill
+- [plan](../plan/) - Creates tickets and manages the plan
 - [verify](../verify/) - Confirms implementation matches intent
 - [close-gaps](../close-gaps/) - Fixes issues found during verification
+
+### Testing
 - [test-cli](../test-cli/) - Run automated tests for CLI/TUI applications
+- [test-web](../test-web/) - Run automated tests for web applications
+
+### Workflow
+- [elaborate](../elaborate/) - Requirements clarification (start here)

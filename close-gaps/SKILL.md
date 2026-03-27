@@ -1,6 +1,6 @@
 ---
 name: close-gaps
-description: Fixes discrepancies between implementation and acceptance criteria. Use when verify skill finds gaps. Analyzes the gap, implements fixes, updates tests. Loops back to verify for re-checking. Maximum 3 attempts before escalation. Part of choo-choo-skills collection.
+description: Fixes discrepancies between implementation and acceptance criteria. Use when verify skill finds gaps. Analyzes the gap, implements fixes, updates tests. Loops back to verify for re-checking. Maximum 3 attempts before escalation.
 license: MIT
 compatibility: Requires bash, git, tk CLI.
 metadata:
@@ -147,7 +147,16 @@ test stop app
 
 ## Related Skills
 
+### Virtuous Cycle
+- [execute](../execute/) - Orchestrates the full cycle including this skill
 - [verify](../verify/) - Finds gaps this skill fixes, re-checks after fix
 - [implement](../implement/) - Original implementation that may need fixing
+
+### Testing
+- [test-cli](../test-cli/) - **MANDATORY** for CLI/TUI/process fixes
+- [test-web](../test-web/) - For web application fixes
+
+### Workflow
+- [elaborate](../elaborate/) - Requirements clarification (start here)
+- [plan](../plan/) - Creates tickets for implementation
 - [document](../document/) - Updates README.md after epic completion
-- [test-cli](../test-cli/) - **MANDATORY** for CLI/TUI/process fixes. Never use raw tmux.

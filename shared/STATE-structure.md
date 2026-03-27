@@ -1,6 +1,6 @@
 # STATE.md Structure
 
-The STATE.md file is the control plane for choo-choo workflow. It persists workflow state across context resets and enables context-recovery patterns.
+The STATE.md file is the control plane for the agent-skills workflow. It persists workflow state across context resets and enables context-recovery patterns.
 
 ## Location
 
@@ -106,7 +106,7 @@ decisions: []
 
 ## Crash Recovery
 
-If choo-choo crashes during execution:
+If the agent crashes during execution:
 
 1. Read STATE.md to determine last known state
 2. Check `phase` to know which skill was active

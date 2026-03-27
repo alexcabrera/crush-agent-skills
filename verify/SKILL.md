@@ -1,6 +1,6 @@
 ---
 name: verify
-description: Confirms implementation matches ticket acceptance criteria. Use after execute skill completes a ticket. Checks code against each acceptance criterion, runs tests, and produces a verification report. If gaps found, hands off to close-gaps skill. Part of choo-choo-skills collection.
+description: Confirms implementation matches ticket acceptance criteria. Use after implement skill completes a ticket. Checks code against each acceptance criterion, runs tests, and produces a verification report. If gaps found, hands off to close-gaps skill.
 license: MIT
 compatibility: Requires bash, git, tk CLI.
 metadata:
@@ -139,7 +139,16 @@ When all tickets in an epic are verified:
 
 ## Related Skills
 
+### Virtuous Cycle
+- [execute](../execute/) - Orchestrates the full cycle including this skill
 - [implement](../implement/) - Creates the implementation this skill verifies
 - [close-gaps](../close-gaps/) - Fixes issues found during verification
-- [document](../document/) - Updates README.md after epic completion
+
+### Testing
 - [test-cli](../test-cli/) - Run automated tests for CLI/TUI applications
+- [test-web](../test-web/) - Run automated tests for web applications
+
+### Workflow
+- [elaborate](../elaborate/) - Requirements clarification (start here)
+- [plan](../plan/) - Creates tickets for implementation
+- [document](../document/) - Updates README.md after epic completion

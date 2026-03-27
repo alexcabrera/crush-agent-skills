@@ -12,7 +12,7 @@ metadata:
 
 This skill provides structured long-horizon task management using the `tk` ticket system. Tickets are markdown files that persist in the repository, surviving across context windows.
 
-Part of the [choo-choo-skills](../) collection.
+Part of the [agent-skills](../) collection.
 
 ## When to Use This Skill
 
@@ -291,4 +291,16 @@ For hierarchy: "This task belongs to this story"
 
 ## Related Skills
 
-- **design** - Use this skill first when starting with a vague idea or unclear requirements. It produces the design.md and plan.md that this skill consumes.
+### Virtuous Cycle
+- [elaborate](../elaborate/) - Requirements clarification (start here, produces design.md)
+- [execute](../execute/) - Runs the virtuous cycle after plan approval
+- [implement](../implement/) - Implements a single ticket
+- [verify](../verify/) - Confirms implementation matches acceptance criteria
+- [close-gaps](../close-gaps/) - Fixes issues found during verification
+
+### Testing
+- [test-cli](../test-cli/) - CLI/TUI testing
+- [test-web](../test-web/) - Web application testing
+
+### Documentation
+- [document](../document/) - Generates README.md after epic completion

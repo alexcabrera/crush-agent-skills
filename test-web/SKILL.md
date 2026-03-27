@@ -241,6 +241,18 @@ fi
 
 ## Related Skills
 
-- [elaborate](../elaborate/) - Design phase for web applications
-- [execute](../execute/) - Autonomous cycle that routes to this skill
+### Virtuous Cycle
+- [execute](../execute/) - Orchestrates the full cycle and routes to this skill
+- [implement](../implement/) - Creates implementations to test
+- [verify](../verify/) - Uses this skill for acceptance criteria verification
+- [close-gaps](../close-gaps/) - Uses this skill to verify fixes
+
+### Workflow
+- [elaborate](../elaborate/) - Requirements clarification (start here)
+- [plan](../plan/) - Creates tickets for implementation
+
+### Design Support
 - [ui-design](../ui-design/) - UI/UX patterns for web applications
+
+### CLI Testing
+- [test-cli](../test-cli/) - For CLI/TUI applications (use instead of this skill)

@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires tmux, bash.
 metadata:
   version: "2.0.0"
-  author: choo-choo-skills
+  author: agent-skills
 ---
 
 # test-cli Skill
@@ -42,7 +42,7 @@ test run app "./app" -- --wait "Ready" --expect "Menu"  # Full lifecycle
 
 - **verify skill** - Test that implementations meet acceptance criteria
 - **execute skill** - Run integration tests after implementing code
-- Testing TUI applications (bubbletea, choo-choo, etc.)
+- Testing TUI applications (bubbletea, etc.)
 - Running servers or long processes that need isolation
 - Detecting hangs via timeout + screen capture
 - End-to-end testing of interactive CLIs
@@ -261,7 +261,7 @@ test send-file agent-1 /tmp/instructions.txt
 test send agent-1 Enter
 ```
 
-## Integration with choo-choo
+## Integration with the Virtuous Cycle
 
 ### With verify skill
 
@@ -295,7 +295,7 @@ This ensures:
 
 ## Script Location
 
-All scripts are in `choo-choo-skills/test/scripts/`:
+All scripts are in `test-cli/scripts/`:
 - `test` - Main CLI wrapper
 
 ## Best Practices
@@ -308,6 +308,15 @@ All scripts are in `choo-choo-skills/test/scripts/`:
 
 ## Related Skills
 
-- [verify](../verify/) - Uses test skill for acceptance criteria verification
-- [execute](../execute/) - Uses test skill for integration testing
-- [close-gaps](../close-gaps/) - Uses test skill to verify fixes
+### Virtuous Cycle
+- [execute](../execute/) - Orchestrates the full cycle
+- [implement](../implement/) - Creates implementations to test
+- [verify](../verify/) - Uses this skill for acceptance criteria verification
+- [close-gaps](../close-gaps/) - Uses this skill to verify fixes
+
+### Workflow
+- [elaborate](../elaborate/) - Requirements clarification (start here)
+- [plan](../plan/) - Creates tickets for implementation
+
+### Web Testing
+- [test-web](../test-web/) - For web applications (use instead of this skill)

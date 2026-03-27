@@ -260,3 +260,18 @@ The ui-design skill is typically invoked:
 - [Hypermedia Web UI](references/hypermedia-web-ui.md) - Server-rendered HTML with HTMX (default)
 - [SPA Web UI](references/spa-web-ui.md) - Single-page applications
 - [Terminal UI](references/terminal-ui.md) - CLI and TUI design patterns
+
+---
+
+## Related Skills
+
+### Virtuous Cycle
+- [elaborate](../elaborate/) - Invokes this skill during design phase
+- [plan](../plan/) - Creates tickets from design output
+- [execute](../execute/) - Runs the virtuous cycle
+- [implement](../implement/) - Implements UI designs
+- [verify](../verify/) - Confirms implementation matches design
+
+### Testing
+- [test-cli](../test-cli/) - For testing CLI/TUI applications
+- [test-web](../test-web/) - For testing web applications

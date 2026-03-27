@@ -205,7 +205,7 @@ After README.md is generated:
 
 ---
 
-## Integration with choo-choo Workflow
+## Integration with the Virtuous Cycle
 
 ```
 execute → verify → [all tickets verified?]
@@ -253,3 +253,15 @@ Position: After verify, before user notification.
 - [README Templates](references/readme-templates.md) - Templates and examples
 - [Change Detection](references/change-detection.md) - Change scope determination
 - [Design Spec](../../specs/documentation-skill/design.md) - Full design specification
+
+---
+
+## Related Skills
+
+### Virtuous Cycle
+- [elaborate](../elaborate/) - Requirements clarification (start here)
+- [plan](../plan/) - Creates tickets for implementation
+- [execute](../execute/) - Runs the virtuous cycle
+- [implement](../implement/) - Implements a single ticket
+- [verify](../verify/) - Confirms implementation matches acceptance criteria
+- [close-gaps](../close-gaps/) - Fixes issues found during verification
